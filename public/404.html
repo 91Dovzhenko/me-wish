@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>me:wish</title>
+    <script>
+      // GitHub Pages отдаёт этот файл на любой несуществующий адрес.
+      // Переносим путь в параметр и открываем приложение; index.html вернёт исходный адрес.
+      ;(function () {
+        var base = '/me-wish/'
+        var l = window.location
+        var rest = l.pathname.indexOf(base) === 0 ? l.pathname.slice(base.length) : ''
+        l.replace(base + '?__redirect=' + encodeURIComponent(rest + l.search + l.hash))
+      })()
+    </script>
+  </head>
+  <body></body>
+</html>
