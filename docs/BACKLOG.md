@@ -3,12 +3,12 @@
 Отмечай выполненное `[x]` и дату. Новые задачи, найденные в работе, добавляй в текущий этап или в «Отложено».
 
 ## Этап 0 — подготовка
-- [ ] Создать репозиторий `me-wish`, Vite + React + TS + Tailwind, ESLint/Prettier
-- [ ] Деплой на GitHub Pages (GitHub Actions), решить вопрос прямых ссылок (404.html или HashRouter)
-- [ ] Проект Supabase, CLI, папка миграций, `.env.example`
+- [x] Создать репозиторий `me-wish`, Vite + React + TS + Tailwind, ESLint/Prettier — 2026-11-22 (001)
+- [x] Деплой на GitHub Pages (GitHub Actions), решить вопрос прямых ссылок (404.html или HashRouter) — 2026-11-22 (001)
+- [x] Проект Supabase, CLI, папка миграций, `.env.example` — 2026-11-22 (001)
 - [ ] Создать Telegram-бота, задать домен для Login Widget
 - [ ] Исследование разбора ссылок → `docs/tech/parsing-research.md` (тестовые ссылки: 3 Ozon, 3 WB, 3 Яндекс Маркет, 3 обычных магазина, 1 AliExpress)
-- [ ] Каркас PWA: манифест, иконки, тема
+- [x] Каркас PWA: манифест, иконки, тема — 2026-11-22 (001)
 
 ## Этап 1 — личный вишлист
 - [ ] Схема БД: users/profiles, lists, list_members, wishes, list_items + RLS
