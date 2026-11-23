@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Спецификация — элементы</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="width: 1400px; box-sizing: border-box; padding: 48px; background: #FFFFFF; font-family: Onest, sans-serif; color: #17181C; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 48px">
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Кнопки</h2>
+<button type="button" style="height: 56px; border: none; border-radius: 18px; background: #C8F56A; color: #17181C; font-family: Onest, sans-serif; font-size: 17px; font-weight: 700">Главная · лайм</button>
+<button type="button" disabled style="height: 56px; border: none; border-radius: 18px; background: #E6EFD0; color: #5C6150; font-family: Onest, sans-serif; font-size: 17px; font-weight: 700">Главная · недоступна</button>
+<button type="button" style="height: 52px; border: none; border-radius: 16px; background: #17181C; color: #FFFFFF; font-family: Onest, sans-serif; font-size: 16px; font-weight: 600">Тёмная</button>
+<div style="display: flex; gap: 10px">
+<button type="button" style="flex: 1; height: 48px; border: none; border-radius: 14px; background: #F4F4EF; color: #17181C; font-family: Onest, sans-serif; font-size: 15px; font-weight: 600">Вторичная</button>
+<button type="button" style="flex: 1; height: 48px; border: none; border-radius: 14px; background: #EEE9FF; color: #4B3BC4; font-family: Onest, sans-serif; font-size: 15px; font-weight: 600">Лавандовая</button>
+</div>
+<button type="button" style="height: 48px; border: 1.5px solid #F3C9C4; border-radius: 14px; background: #FFFFFF; color: #B42318; font-family: Onest, sans-serif; font-size: 15px; font-weight: 600">Опасное действие</button>
+<div style="display: flex; gap: 10px; align-items: center">
+<button type="button" aria-label="Закрыть" style="width: 44px; height: 44px; border: none; border-radius: 999px; background: #F4F4EF; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+<button type="button" aria-label="Ещё" style="width: 44px; height: 44px; border: none; border-radius: 999px; background: #F4F4EF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:3;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button>
+<span aria-hidden="true" style="width: 64px; height: 64px; border-radius: 999px; background: #C8F56A; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px rgba(116, 150, 30, 0.35)"><svg width="28" height="28" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2;stroke-linecap:round;fill:none"><path d="M12 5v14M5 12h14"></path></svg></span>
+<span style="font-size: 12px; color: #5E6066">Иконки 44 · «+» 64</span>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Поля</h2>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="s1" style="font-size: 13px; font-weight: 600">Название <span aria-hidden="true" style="color: #D92D20">*</span></label><input id="s1" type="text" placeholder="Что вы хотите?" style="height: 50px; box-sizing: border-box; border: 1.5px solid #E2E1DB; border-radius: 14px; padding: 0 14px; font-family: Onest, sans-serif; font-size: 16px"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="s2" style="font-size: 13px; font-weight: 600">В фокусе</label><input id="s2" type="text" value="Штатив K&amp;F Concept" style="height: 50px; box-sizing: border-box; border: 1.5px solid #17181C; border-radius: 14px; padding: 0 14px; font-family: Onest, sans-serif; font-size: 16px; color: #17181C"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="s3" style="font-size: 13px; font-weight: 600">Название <span aria-hidden="true" style="color: #D92D20">*</span></label><input id="s3" type="text" aria-invalid="true" aria-describedby="s3e" style="height: 50px; box-sizing: border-box; border: 1.5px solid #D92D20; background: #FFF7F6; border-radius: 14px; padding: 0 14px; font-family: Onest, sans-serif; font-size: 16px"><span id="s3e" style="font-size: 13px; color: #B42318">Напишите, что вы хотите</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="s4" style="font-size: 13px; font-weight: 600">Цена</label><div style="position: relative"><input id="s4" type="text" value="11 990" style="width: 100%; height: 50px; box-sizing: border-box; border: 1.5px solid #E2E1DB; border-radius: 14px; padding: 0 40px 0 14px; font-family: Onest, sans-serif; font-size: 16px; color: #17181C"><span aria-hidden="true" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 16px; font-weight: 600; color: #5E6066">₽</span></div></div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Выпадающий список</h2>
+<button type="button" aria-haspopup="listbox" style="display: flex; align-items: center; justify-content: space-between; height: 50px; border: 1.5px solid #E2E1DB; border-radius: 14px; padding: 0 14px; background: #FFFFFF; font-family: Onest, sans-serif; font-size: 15px; font-weight: 600; color: #17181C">В желаниях<svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+<div role="listbox" aria-label="Статус" style="border-radius: 16px; padding: 6px; background: #FFFFFF; box-shadow: 0 14px 34px rgba(23, 24, 28, 0.16), 0 0 0 1px #EEEDE8; display: flex; flex-direction: column">
+<button type="button" role="option" aria-selected="true" style="display: flex; align-items: center; justify-content: space-between; height: 46px; border: none; border-radius: 12px; padding: 0 12px; background: #F4F4EF; font-family: Onest, sans-serif; font-size: 15px; font-weight: 600; color: #17181C">В желаниях<svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></button>
+<button type="button" role="option" aria-selected="false" style="display: flex; align-items: center; height: 46px; border: none; border-radius: 12px; padding: 0 12px; background: transparent; font-family: Onest, sans-serif; font-size: 15px; color: #17181C">Куплено</button>
+<button type="button" role="option" aria-selected="false" style="display: flex; align-items: center; height: 46px; border: none; border-radius: 12px; padding: 0 12px; background: transparent; font-family: Onest, sans-serif; font-size: 15px; color: #17181C">Подарили</button>
+</div>
+<h2 style="margin: 10px 0 0; font-size: 20px; font-weight: 700">Чипы</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+<button type="button" role="switch" aria-checked="true" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; border: none; border-radius: 999px; padding: 0 14px 0 8px; background: #F4F4EF; color: #17181C; font-family: Onest, sans-serif; font-size: 14px; font-weight: 600; white-space: nowrap"><span aria-hidden="true" style="width: 22px; height: 22px; border-radius: 999px; background: #C8F56A; display: inline-flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none"><path d="M5 12l5 5 9-10"></path></svg></span>Исполненные</button>
+<button type="button" role="switch" aria-checked="false" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; border: none; border-radius: 999px; padding: 0 14px 0 8px; background: #F4F4EF; color: #5E6066; font-family: Onest, sans-serif; font-size: 14px; font-weight: 600; white-space: nowrap"><span aria-hidden="true" style="width: 22px; height: 22px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid #C9C8C2; display: inline-block"></span>Исполненные</button>
+<button type="button" style="display: inline-flex; align-items: center; gap: 6px; height: 40px; border: none; background: #F4F4EF; border-radius: 999px; padding: 0 14px; font-family: Onest, sans-serif; font-size: 14px; font-weight: 600; color: #17181C">По приоритету</button>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Приоритет</h2>
+<sc-for list="{{levels}}" as="l" hint-placeholder-count="5"><div style="display: flex; align-items: center; gap: 8px; height: 32px"><dc-import name="Hearts" level="{{l.n}}" size="14" gap="0" hint-size="70px,14px"></dc-import><span style="font-size: 14px; font-weight: 600; color: #4B3BC4">{{l.t}}</span></div></sc-for>
+<span style="font-size: 12px; color: #5E6066">Сердечки 14 px без отступов, справа — уровень. В сетке — 11 px без подписи.</span>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Метки на фото</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 16px; border-radius: 18px; background: #E9E8E2">
+<span style="background: #C8F56A; color: #17181C; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px">Мечта</span>
+<span style="background: #C8F56A; color: #17181C; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px">Очень хочу</span>
+<span style="display: inline-flex; align-items: center; gap: 4px; background: #17181C; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 3px 8px 3px 6px; border-radius: 999px"><svg width="11" height="11" viewBox="0 0 24 24" style="stroke:#C8F56A;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>Куплено</span>
+<span style="display: inline-flex; align-items: center; gap: 4px; background: #17181C; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 3px 8px 3px 6px; border-radius: 999px"><svg width="11" height="11" viewBox="0 0 24 24" style="stroke:#C8F56A;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>Подарили</span>
+<span style="font-size: 11px; font-weight: 700; color: #17181C; background: #FFFFFF; padding: 4px 9px; border-radius: 999px; box-shadow: 0 1px 3px rgba(23, 24, 28, 0.14)">14 марта</span>
+</div>
+<span style="font-size: 12px; color: #5E6066">Всегда в левом верхнем углу фото, не закрывают товар.</span>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Меню «•••»</h2>
+<div role="menu" aria-label="Пример меню" style="width: 240px; background: #FFFFFF; border-radius: 20px; padding: 6px; box-shadow: 0 16px 40px rgba(23, 24, 28, 0.18), 0 0 0 1px #EEEDE8; display: flex; flex-direction: column">
+<button type="button" role="menuitem" style="display: flex; align-items: center; height: 46px; border: none; border-radius: 14px; padding: 0 12px; background: #F4F4EF; font-family: Onest, sans-serif; font-size: 15px; color: #17181C; text-align: left">Редактировать</button>
+<button type="button" role="menuitem" style="display: flex; align-items: center; height: 46px; border: none; border-radius: 14px; padding: 0 12px; background: none; font-family: Onest, sans-serif; font-size: 15px; color: #17181C; text-align: left">Переместить</button>
+<div aria-hidden="true" style="height: 1px; background: #EEEDE8; margin: 4px 8px"></div>
+<button type="button" role="menuitem" style="display: flex; align-items: center; height: 46px; border: none; border-radius: 14px; padding: 0 12px; background: none; font-family: Onest, sans-serif; font-size: 15px; color: #B42318; text-align: left">Удалить</button>
+</div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const t = ['Можно и без', 'Было бы неплохо', 'Хочу', 'Очень хочу', 'Мечта'];
+    return { levels: [5, 4, 3, 2, 1].map((n) => ({ n, t: t[n - 1] })) };
+  }
+}
+</script>
+</body>
+</html>

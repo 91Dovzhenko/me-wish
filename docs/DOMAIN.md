@@ -27,27 +27,28 @@ active ──бронь──▶ booked ──отмечено владельц�
   └─«Куплено»──▶ purchased
 ```
 
-Названия в интерфейсе (D-058): `active` — «Хочу», `purchased` — «Куплено», `gifted` — «Подарили», `booked` — «Забронировано».
+Названия в интерфейсе (D-058, D-070): `active` — «В желаниях», `purchased` — «Куплено», `gifted` — «Подарили», `booked` — «Забронировано».
 
 - `active` — активно, можно бронировать.
 - `booked` — есть действующая бронь (производное от Booking; можно хранить вычисляемо).
 - `purchased` — куплено самим владельцем. Завершено.
 - `gifted` — подарено. Завершено.
 - Завершённые (`purchased`, `gifted`) показываются в группе «Исполнено» и скрываются переключателем.
-- Владелец может вернуть завершённую карточку в `active`.
+- Владелец может вернуть завершённую карточку в `active` и вообще менять статус в любую сторону (D-069).
 
 **Удаление — не статус.** `ListItem.deleted_at` (корзина, 30 дней). Если удалены все ListItem желания — желание тоже считается в корзине.
 
 ## 3. Поля
 
 ### List
-`id, title, icon, description, event_date?, cover_wish_id?, visibility (private|link), public_slug?, booking_enabled, anonymity_mode (choice|anonymous_only|open_only), voting_enabled, archived_at?, created_by, created_at`
+`id, title, description?, event_date?, icon, color, cover_mode (collage|icon), created_by, created_at, updated_at` — этап 1 (иконка и цвет — D-075, обложка — D-095).
+Позже: `voting_enabled` [Э2], `visibility (private|link), public_slug?, booking_enabled, anonymity_mode (choice|anonymous_only|open_only)` [Э4], `archived_at?` [Э5].
 
 ### ListMember
 `list_id, user_id, role (editor|viewer), added_at`
 
 ### Wish (общие поля)
-`id, title, description?, image_path?, source_url?, price?, currency (RUB|USD|EUR)?, status, completed_at?, created_by, created_at, updated_at`
+`id, title, description?, image_path?, source_url?, price? (в рублях, D-072), status, completed_at?, created_by, created_at, updated_at`
 
 `description` — свободный текст: размер, цвет, модель, пожелания (D-063). `source_url` — ссылка без рекламных меток (D-061). Полей разбора (`canonical_url`, `source_domain`, `parse_status`) нет — автозаполнения нет (D-059).
 
@@ -71,7 +72,7 @@ active ──бронь──▶ booked ──отмечено владельц�
 `chat_id, user_id? | guest_id?, username?, linked_at`
 
 ### User (профиль)
-`id, display_name, avatar_url?, default_list_id?, telegram_id?, google_sub?`
+`id (= id в Supabase Auth), display_name, avatar_url? (из Telegram/Google), avatar_path? (своё фото, D-091), default_list_id?, telegram_id? (с ТЗ 003-f), created_at`. Способы входа (Google, Telegram) хранит Supabase Auth.
 
 ## 4. Роли и права
 
@@ -102,4 +103,4 @@ active ──бронь──▶ booked ──отмечено владельц�
 - Нельзя забронировать Wish в статусе `purchased`/`gifted`.
 - Нельзя забронировать в списке с `booking_enabled = false`.
 - Голоса доступны только при `voting_enabled = true`; при выключении голоса сохраняются, но не показываются.
-- Сумма списка = сумма `price` по ListItem без `deleted_at`, статус не завершён, `currency = RUB`.
+- Сумма списка = сумма `price` по ListItem без `deleted_at`, статус не завершён.

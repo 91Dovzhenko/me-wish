@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Фото товара</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="position: relative; width: 100%; aspect-ratio: {{ar}}; height: {{h}}; overflow: hidden; background: #F4F4EF; border-radius: {{radius}}px; font-family: Onest, sans-serif">
+<sc-if value="{{hasPhoto}}" hint-placeholder-val="{{ true }}"><img src="{{src}}" alt="{{alt}}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: {{opacity}}"></sc-if>
+<sc-if value="{{noPhoto}}"><div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #F0EFEA"><svg width="{{iconSize}}" height="{{iconSize}}" viewBox="0 0 24 24" style="stroke:#8A8B90;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1s3 1 5 1zM12 7c1.5-3 5-3.5 5-1s-3 1-5 1z"></path></svg></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"p":{"editor":"enum","options":["p1","p2","p3","p4","p5","p6",""],"default":"p1"},"radius":{"editor":"int","default":16},"dim":{"editor":"boolean","default":false},"fill":{"editor":"boolean","default":false},"$preview":{"width":200,"height":200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const src = {
+      p1: '/_blob/469af2bdbd969601fd8987c702f8c7aa',
+      p2: '/_blob/3f5d836a287dd08dfc5d2f75a0f2e53b',
+      p3: '/_blob/f25658efe17e73f758a76302c4077302',
+      p4: '/_blob/e54b0aa006235c5f815fe0e014f464ff',
+      p5: '/_blob/9dd5ad4fd07e6e2459673d541a820d4c',
+      p6: '/_blob/03eedffd0817baec9d1af3bb68440273'
+    };
+    const alt = {
+      p1: 'Штатив K&F Concept с видеоголовой', p2: 'Чёрные солнцезащитные очки', p3: 'Клетка SmallRig для Sony ZV-E10',
+      p4: 'Очки с голубой оправой', p5: 'Алюминиевые карабины, 5 шт.', p6: 'Штатив K&F Concept с шаровой головой'
+    };
+    const p = this.props.p ?? 'p1';
+    const has = !!src[p];
+    return {
+      src: src[p] ?? '', alt: alt[p] ?? 'Фото товара',
+      hasPhoto: has, noPhoto: !has,
+      radius: this.props.radius ?? 16,
+      opacity: this.props.dim ? 0.5 : 1,
+      iconSize: this.props.fill ? 28 : 40,
+      ar: this.props.fill ? 'auto' : '1 / 1',
+      h: this.props.fill ? '100%' : 'auto'
+    };
+  }
+}
+</script>
+</body>
+</html>

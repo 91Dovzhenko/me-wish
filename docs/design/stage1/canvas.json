@@ -1,0 +1,945 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-23T15:00:00Z"
+ },
+ "title": "me:wish — дизайн этапа 1",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": {
+   "x": 940,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Главная",
+   "radius": 44
+  },
+  "Mobile-Login.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Вход",
+   "radius": 44
+  },
+  "Mobile-FirstRun.dc.html": {
+   "x": 470,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Первый вход",
+   "radius": 44
+  },
+  "Mobile-List.dc.html": {
+   "x": 1410,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Список",
+   "radius": 44
+  },
+  "Mobile-List-Sort.dc.html": {
+   "x": 1880,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Список — сортировка",
+   "radius": 44
+  },
+  "Mobile-List-Menu.dc.html": {
+   "x": 2350,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Список — меню «•••»",
+   "radius": 44
+  },
+  "Mobile-Card.dc.html": {
+   "x": 2820,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — шторка",
+   "radius": 44
+  },
+  "Mobile-Card-Priority.dc.html": {
+   "x": 3290,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — выбор приоритета",
+   "radius": 44
+  },
+  "Mobile-Card-Status.dc.html": {
+   "x": 3760,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — статус раскрыт",
+   "radius": 44
+  },
+  "Mobile-Card-Done.dc.html": {
+   "x": 4230,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — исполненная",
+   "radius": 44
+  },
+  "Mobile-Card-Long.dc.html": {
+   "x": 4700,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — длинные название и описание",
+   "radius": 44
+  },
+  "Mobile-Card-Menu.dc.html": {
+   "x": 5170,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — меню «•••»",
+   "radius": 44
+  },
+  "Mobile-Card-Move.dc.html": {
+   "x": 5640,
+   "y": 300,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — переместить",
+   "radius": 44
+  },
+  "Mobile-Add-Empty.dc.html": {
+   "x": 0,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Новое желание — пусто",
+   "radius": 44
+  },
+  "Mobile-Crop.dc.html": {
+   "x": 470,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Обрезка фото",
+   "radius": 44
+  },
+  "Mobile-Add.dc.html": {
+   "x": 940,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Новое желание — заполнено",
+   "radius": 44
+  },
+  "Mobile-Add-Home.dc.html": {
+   "x": 1410,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Форма — открыта с главной",
+   "radius": 44
+  },
+  "Mobile-Add-FromList.dc.html": {
+   "x": 1880,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Форма — открыта из списка",
+   "radius": 44
+  },
+  "Mobile-NewList.dc.html": {
+   "x": 2350,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Новый список",
+   "radius": 44
+  },
+  "Mobile-NewList-Date.dc.html": {
+   "x": 2820,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Новый список — календарь",
+   "radius": 44
+  },
+  "Mobile-ListSettings.dc.html": {
+   "x": 3290,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Настройки списка",
+   "radius": 44
+  },
+  "Mobile-Profile.dc.html": {
+   "x": 3760,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Профиль",
+   "radius": 44
+  },
+  "Mobile-Profile-Name.dc.html": {
+   "x": 4230,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Профиль — имя",
+   "radius": 44
+  },
+  "Mobile-Profile-Avatar.dc.html": {
+   "x": 4700,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Профиль — фото",
+   "radius": 44
+  },
+  "Mobile-Avatar-Crop.dc.html": {
+   "x": 5170,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Фото профиля — обрезка",
+   "radius": 44
+  },
+  "Mobile-Profile-DefaultList.dc.html": {
+   "x": 5640,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Профиль — список по умолчанию",
+   "radius": 44
+  },
+  "Mobile-Trash.dc.html": {
+   "x": 6110,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Корзина",
+   "radius": 44
+  },
+  "Mobile-Trash-Empty.dc.html": {
+   "x": 6580,
+   "y": 1564,
+   "w": 390,
+   "h": 844,
+   "title": "Корзина — пусто",
+   "radius": 44
+  },
+  "Mobile-Login-Loading.dc.html": {
+   "x": 0,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Вход — «Входим…»",
+   "radius": 44
+  },
+  "Mobile-Login-Error.dc.html": {
+   "x": 470,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Вход — ошибка",
+   "radius": 44
+  },
+  "Mobile-InstallHint.dc.html": {
+   "x": 940,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Подсказка «На экран «Домой»»",
+   "radius": 44
+  },
+  "Mobile-Home-Loading.dc.html": {
+   "x": 1410,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Главная — загрузка",
+   "radius": 44
+  },
+  "Mobile-Offline.dc.html": {
+   "x": 1880,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Нет интернета",
+   "radius": 44
+  },
+  "Mobile-NotFound.dc.html": {
+   "x": 2350,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Страница не найдена — телефон",
+   "radius": 44
+  },
+  "Mobile-List-Loading.dc.html": {
+   "x": 2820,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Список — загрузка",
+   "radius": 44
+  },
+  "Mobile-List-Empty.dc.html": {
+   "x": 3290,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Список — пустой",
+   "radius": 44
+  },
+  "Mobile-List-DoneGroup.dc.html": {
+   "x": 3760,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Список — группа «Исполнено»",
+   "radius": 44
+  },
+  "Mobile-List-AllDone.dc.html": {
+   "x": 4230,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Список — исполнено всё",
+   "radius": 44
+  },
+  "Mobile-List-Compact.dc.html": {
+   "x": 4700,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Список — без описания",
+   "radius": 44
+  },
+  "Mobile-List-Added.dc.html": {
+   "x": 5170,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Тост «Добавлено»",
+   "radius": 44
+  },
+  "Mobile-List-Deleted.dc.html": {
+   "x": 5640,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Тост «Удалено · Отменить»",
+   "radius": 44
+  },
+  "Mobile-List-Menu-Last.dc.html": {
+   "x": 6110,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Меню единственного списка",
+   "radius": 44
+  },
+  "Mobile-List-DeleteConfirm.dc.html": {
+   "x": 6580,
+   "y": 2828,
+   "w": 390,
+   "h": 844,
+   "title": "Удаление списка — подтверждение",
+   "radius": 44
+  },
+  "Mobile-Add-Uploading.dc.html": {
+   "x": 0,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Фото загружается",
+   "radius": 44
+  },
+  "Mobile-Add-PhotoError.dc.html": {
+   "x": 470,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Ошибка: не картинка",
+   "radius": 44
+  },
+  "Mobile-Add-PhotoTooBig.dc.html": {
+   "x": 940,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Ошибка: больше 20 МБ",
+   "radius": 44
+  },
+  "Mobile-Add-PhotoSmall.dc.html": {
+   "x": 1410,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Предупреждение: маленькое фото",
+   "radius": 44
+  },
+  "Mobile-Add-NameError.dc.html": {
+   "x": 1880,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Пустое название",
+   "radius": 44
+  },
+  "Mobile-Add-Keyboard.dc.html": {
+   "x": 2350,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Форма с клавиатурой",
+   "radius": 44
+  },
+  "Mobile-Add-Discard.dc.html": {
+   "x": 2820,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "«Не сохранять желание?»",
+   "radius": 44
+  },
+  "Mobile-Card-NoPhoto.dc.html": {
+   "x": 3290,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — без фото и цены",
+   "radius": 44
+  },
+  "Mobile-Card-NoLink.dc.html": {
+   "x": 3760,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — без ссылки и описания",
+   "radius": 44
+  },
+  "Mobile-Card-Edit.dc.html": {
+   "x": 4230,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Карточка — редактирование",
+   "radius": 44
+  },
+  "Mobile-Card-Edit-Discard.dc.html": {
+   "x": 4700,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "«Не сохранять изменения?»",
+   "radius": 44
+  },
+  "Mobile-Profile-AvatarError.dc.html": {
+   "x": 5170,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Профиль — ошибка загрузки фото",
+   "radius": 44
+  },
+  "Mobile-Trash-Restore.dc.html": {
+   "x": 5640,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Корзина — восстановить в список",
+   "radius": 44
+  },
+  "Mobile-Trash-Clear.dc.html": {
+   "x": 6110,
+   "y": 4092,
+   "w": 390,
+   "h": 844,
+   "title": "Корзина — очистить",
+   "radius": 44
+  },
+  "Desktop-Login.dc.html": {
+   "x": 0,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Вход — компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Home.dc.html": {
+   "x": 1520,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Главная · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Home-ManyLists.dc.html": {
+   "x": 3040,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Много списков — компьютер",
+   "expand": "fill"
+  },
+  "Desktop-List.dc.html": {
+   "x": 4560,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Список · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-List-Sort.dc.html": {
+   "x": 6080,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Список — сортировка · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-List-Menu.dc.html": {
+   "x": 7600,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Список — меню «•••» · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Card.dc.html": {
+   "x": 9120,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Карточка — окно · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Card-Priority.dc.html": {
+   "x": 10640,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Карточка — выбор приоритета · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Card-Menu.dc.html": {
+   "x": 12160,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Карточка — меню «•••» · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Card-Move.dc.html": {
+   "x": 13680,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Карточка — переместить · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Add.dc.html": {
+   "x": 0,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Новое желание · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Add-Drag.dc.html": {
+   "x": 1520,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Перетаскивание фото — компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Crop.dc.html": {
+   "x": 3040,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Обрезка фото · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-NewList.dc.html": {
+   "x": 4560,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Новый список · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-NewList-Date.dc.html": {
+   "x": 6080,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Новый список — календарь · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-ListSettings.dc.html": {
+   "x": 7600,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Настройки списка · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-ProfileMenu.dc.html": {
+   "x": 9120,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Меню профиля · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Profile.dc.html": {
+   "x": 10640,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Профиль · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Profile-Name.dc.html": {
+   "x": 12160,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Профиль — имя · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Profile-DefaultList.dc.html": {
+   "x": 13680,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Профиль — список по умолчанию · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Avatar-Crop.dc.html": {
+   "x": 15200,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Обрезка фото профиля — компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Trash.dc.html": {
+   "x": 16720,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Корзина · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-NotFound.dc.html": {
+   "x": 18240,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Страница не найдена — компьютер",
+   "expand": "fill"
+  },
+  "Spec-Foundations.dc.html": {
+   "x": 0,
+   "y": 8416,
+   "w": 1400,
+   "h": 980,
+   "title": "Цвета, шрифты, отступы, скругления, тени"
+  },
+  "Spec-Components.dc.html": {
+   "x": 1480,
+   "y": 8416,
+   "w": 1400,
+   "h": 900,
+   "title": "Элементы"
+  },
+  "Spec-Cards.dc.html": {
+   "x": 2960,
+   "y": 8416,
+   "w": 1400,
+   "h": 1000,
+   "title": "Карточки и обложки"
+  },
+  "Spec-Navigation.dc.html": {
+   "x": 4440,
+   "y": 8416,
+   "w": 1400,
+   "h": 560,
+   "title": "Меню, приоритет, календарь"
+  },
+  "Spec-Feedback.dc.html": {
+   "x": 5920,
+   "y": 8416,
+   "w": 1400,
+   "h": 700,
+   "title": "Диалог, тосты, плашка, скелетоны"
+  },
+  "WishCard.dc.html": {
+   "x": 7400,
+   "y": 8416,
+   "w": 180,
+   "h": 280,
+   "title": "Компонент: карточка"
+  },
+  "Cover.dc.html": {
+   "x": 7660,
+   "y": 8416,
+   "w": 190,
+   "h": 210,
+   "title": "Компонент: обложка"
+  },
+  "Photo.dc.html": {
+   "x": 7930,
+   "y": 8416,
+   "w": 200,
+   "h": 200,
+   "title": "Компонент: фото"
+  },
+  "Hearts.dc.html": {
+   "x": 8210,
+   "y": 8416,
+   "w": 160,
+   "h": 40,
+   "title": "Компонент: сердечки"
+  },
+  "ListIcon.dc.html": {
+   "x": 8450,
+   "y": 8416,
+   "w": 40,
+   "h": 40,
+   "title": "Компонент: иконка списка"
+  },
+  "DatePicker.dc.html": {
+   "x": 8570,
+   "y": 8416,
+   "w": 320,
+   "h": 390,
+   "title": "Компонент: календарь"
+  },
+  "Toast.dc.html": {
+   "x": 8970,
+   "y": 8416,
+   "w": 360,
+   "h": 60,
+   "title": "Компонент: тост"
+  },
+  "Dialog.dc.html": {
+   "x": 9410,
+   "y": 8416,
+   "w": 342,
+   "h": 200,
+   "title": "Компонент: диалог"
+  },
+  "Sidebar.dc.html": {
+   "x": 9832,
+   "y": 8416,
+   "w": 260,
+   "h": 936,
+   "title": "Компонент: боковое меню"
+  },
+  "Desktop-FirstRun.dc.html": {
+   "x": 15200,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Первый вход · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Home-Loading.dc.html": {
+   "x": 16720,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Главная — загрузка · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-List-Loading.dc.html": {
+   "x": 18240,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Список — загрузка · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-List-Empty.dc.html": {
+   "x": 19760,
+   "y": 5656,
+   "w": 1440,
+   "h": 960,
+   "title": "Список — пустой · компьютер",
+   "expand": "fill"
+  },
+  "Desktop-Trash-Empty.dc.html": {
+   "x": 19760,
+   "y": 7036,
+   "w": 1440,
+   "h": 960,
+   "title": "Корзина — пусто · компьютер",
+   "expand": "fill"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Mobile-Login.dc.html",
+  "Mobile-FirstRun.dc.html",
+  "Mobile-List.dc.html",
+  "Mobile-List-Sort.dc.html",
+  "Mobile-List-Menu.dc.html",
+  "Mobile-Card.dc.html",
+  "Mobile-Card-Priority.dc.html",
+  "Mobile-Card-Status.dc.html",
+  "Mobile-Card-Done.dc.html",
+  "Mobile-Card-Long.dc.html",
+  "Mobile-Card-Menu.dc.html",
+  "Mobile-Card-Move.dc.html",
+  "Mobile-Add-Empty.dc.html",
+  "Mobile-Crop.dc.html",
+  "Mobile-Add.dc.html",
+  "Mobile-Add-Home.dc.html",
+  "Mobile-Add-FromList.dc.html",
+  "Mobile-NewList.dc.html",
+  "Mobile-NewList-Date.dc.html",
+  "Mobile-ListSettings.dc.html",
+  "Mobile-Profile.dc.html",
+  "Mobile-Profile-Name.dc.html",
+  "Mobile-Profile-Avatar.dc.html",
+  "Mobile-Avatar-Crop.dc.html",
+  "Mobile-Profile-DefaultList.dc.html",
+  "Mobile-Trash.dc.html",
+  "Mobile-Trash-Empty.dc.html",
+  "Mobile-Login-Loading.dc.html",
+  "Mobile-Login-Error.dc.html",
+  "Mobile-InstallHint.dc.html",
+  "Mobile-Home-Loading.dc.html",
+  "Mobile-Offline.dc.html",
+  "Mobile-NotFound.dc.html",
+  "Mobile-List-Loading.dc.html",
+  "Mobile-List-Empty.dc.html",
+  "Mobile-List-DoneGroup.dc.html",
+  "Mobile-List-AllDone.dc.html",
+  "Mobile-List-Compact.dc.html",
+  "Mobile-List-Added.dc.html",
+  "Mobile-List-Deleted.dc.html",
+  "Mobile-List-Menu-Last.dc.html",
+  "Mobile-List-DeleteConfirm.dc.html",
+  "Mobile-Add-Uploading.dc.html",
+  "Mobile-Add-PhotoError.dc.html",
+  "Mobile-Add-PhotoTooBig.dc.html",
+  "Mobile-Add-PhotoSmall.dc.html",
+  "Mobile-Add-NameError.dc.html",
+  "Mobile-Add-Keyboard.dc.html",
+  "Mobile-Add-Discard.dc.html",
+  "Mobile-Card-NoPhoto.dc.html",
+  "Mobile-Card-NoLink.dc.html",
+  "Mobile-Card-Edit.dc.html",
+  "Mobile-Card-Edit-Discard.dc.html",
+  "Mobile-Profile-AvatarError.dc.html",
+  "Mobile-Trash-Restore.dc.html",
+  "Mobile-Trash-Clear.dc.html",
+  "Desktop-Login.dc.html",
+  "Desktop-Home.dc.html",
+  "Desktop-Home-ManyLists.dc.html",
+  "Desktop-List.dc.html",
+  "Desktop-List-Sort.dc.html",
+  "Desktop-List-Menu.dc.html",
+  "Desktop-Card.dc.html",
+  "Desktop-Card-Priority.dc.html",
+  "Desktop-Card-Menu.dc.html",
+  "Desktop-Card-Move.dc.html",
+  "Desktop-Add.dc.html",
+  "Desktop-Add-Drag.dc.html",
+  "Desktop-Crop.dc.html",
+  "Desktop-NewList.dc.html",
+  "Desktop-NewList-Date.dc.html",
+  "Desktop-ListSettings.dc.html",
+  "Desktop-ProfileMenu.dc.html",
+  "Desktop-Profile.dc.html",
+  "Desktop-Profile-Name.dc.html",
+  "Desktop-Profile-DefaultList.dc.html",
+  "Desktop-Avatar-Crop.dc.html",
+  "Desktop-Trash.dc.html",
+  "Desktop-NotFound.dc.html",
+  "Spec-Foundations.dc.html",
+  "Spec-Components.dc.html",
+  "Spec-Cards.dc.html",
+  "Spec-Navigation.dc.html",
+  "Spec-Feedback.dc.html",
+  "WishCard.dc.html",
+  "Cover.dc.html",
+  "Photo.dc.html",
+  "Hearts.dc.html",
+  "ListIcon.dc.html",
+  "DatePicker.dc.html",
+  "Toast.dc.html",
+  "Dialog.dc.html",
+  "Sidebar.dc.html",
+  "Desktop-FirstRun.dc.html",
+  "Desktop-Home-Loading.dc.html",
+  "Desktop-List-Loading.dc.html",
+  "Desktop-List-Empty.dc.html",
+  "Desktop-Trash-Empty.dc.html"
+ ],
+ "notes": {
+  "phone": {
+   "x": 0,
+   "y": 0,
+   "text": "Телефон · главные экраны и карточка",
+   "kind": "title1",
+   "maxW": 6030
+  },
+  "phone2": {
+   "x": 0,
+   "y": 1264,
+   "text": "Телефон · добавление, списки, профиль",
+   "kind": "title1",
+   "maxW": 6970
+  },
+  "phone3": {
+   "x": 0,
+   "y": 2528,
+   "text": "Состояния · вход, главная, список",
+   "kind": "title1",
+   "maxW": 6970
+  },
+  "phone4": {
+   "x": 0,
+   "y": 3792,
+   "text": "Состояния · форма, карточка, профиль, корзина",
+   "kind": "title1",
+   "maxW": 6500
+  },
+  "desk": {
+   "x": 0,
+   "y": 5356,
+   "text": "Компьютер · вход, главная, список, карточка",
+   "kind": "title1",
+   "maxW": 21200
+  },
+  "desk2": {
+   "x": 0,
+   "y": 6736,
+   "text": "Компьютер · добавление, списки, профиль, корзина",
+   "kind": "title1",
+   "maxW": 21200
+  },
+  "spec": {
+   "x": 0,
+   "y": 8116,
+   "text": "Спецификация",
+   "kind": "title1",
+   "maxW": 10000
+  }
+ },
+ "designSystems": []
+}

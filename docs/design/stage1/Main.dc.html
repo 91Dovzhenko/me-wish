@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Главная — телефон</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; box-sizing: border-box; background: #F4F4EF; font-family: Onest, sans-serif; color: #17181C">
+<div style="padding: 58px 20px 120px; display: flex; flex-direction: column; gap: 16px">
+<header style="display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 38px; height: 38px; border-radius: 12px; background: #17181C; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="fill:#C8F56A" aria-hidden="true"><path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z"></path></svg></div>
+<span style="font-family: Unbounded, sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -0.01em">ME:WISH</span>
+</div>
+<a href="Mobile-Profile.dc.html" aria-label="Профиль" style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #B9A8FF, #8E78FF); color: #FFFFFF; font-weight: 700; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center">ВД</a>
+</header>
+
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}"><div aria-label="Сводка" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 0 4px">
+<span style="font-size: 13px; color: #5E6066; white-space: nowrap">Активные <b style="color: #17181C; font-weight: 600">21 · 186 400 ₽</b></span>
+<span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #3F4A22; white-space: nowrap; background: #F1F8DE; padding: 3px 10px 3px 6px; border-radius: 999px"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:#4D7C0F;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>Исполнено в 2026: <b style="color: #17181C; font-weight: 600">7 · 54 300 ₽</b></span>
+</div></sc-if>
+<sc-if value="{{loading}}"><div aria-hidden="true" style="display: flex; flex-direction: column; gap: 8px; padding: 0 4px"><div style="width: 180px; height: 14px; border-radius: 7px; background: #E6E5DF"></div><div style="width: 230px; height: 22px; border-radius: 11px; background: #E9E9E3"></div></div></sc-if>
+
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 0">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em">Мои списки</h2>
+<a href="Mobile-NewList.dc.html" style="padding: 12px 0; white-space: nowrap; font-size: 14px; font-weight: 600; color: #4B3BC4; text-decoration: none">+ Новый список</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}"><sc-for list="{{lists}}" as="l" hint-placeholder-count="4"><dc-import name="Cover" title="{{l.title}}" meta="{{l.meta}}" date="{{l.date}}" photos="{{l.photos}}" icon="{{l.icon}}" color="{{l.color}}" h="132" hint-size="100%,190px"></dc-import></sc-for></sc-if>
+<sc-if value="{{loading}}"><sc-for list="{{skel}}" as="k" hint-placeholder-count="4"><div aria-hidden="true" style="background: #FFFFFF; border-radius: 22px; padding: 6px; display: flex; flex-direction: column; gap: 8px"><div style="height: 132px; border-radius: 17px; background: #EEEDE8"></div><div style="margin: 0 8px; height: 14px; width: 70%; border-radius: 7px; background: #EEEDE8"></div><div style="margin: 0 8px 8px; height: 10px; width: 50%; border-radius: 5px; background: #F2F1EC"></div></div></sc-for></sc-if>
+</div>
+</div>
+<a href="Mobile-Add-Empty.dc.html" aria-label="Добавить желание" style="position: absolute; right: 20px; bottom: 28px; width: 64px; height: 64px; border-radius: 999px; background: #C8F56A; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px rgba(116, 150, 30, 0.35), 0 2px 6px rgba(23, 24, 28, 0.12)"><svg width="28" height="28" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+<sc-if value="{{offline}}"><div role="status" style="position: absolute; left: 12px; right: 12px; top: 8px; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px; background: #17181C; color: #FFFFFF; font-size: 13px; font-weight: 500"><svg width="16" height="16" viewBox="0 0 24 24" style="flex: none; stroke:#FFB4A9;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.2-2.7M19 13a10 10 0 0 0-2.5-1.7M12 20h.01"></path></svg>Нет интернета — изменения не сохранятся</div></sc-if>
+<sc-if value="{{install}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(23, 24, 28, 0.35)"></div>
+<div role="dialog" aria-label="Установить на экран «Домой»" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-radius: 28px 28px 0 0; padding: 10px 20px 30px; display: flex; flex-direction: column; gap: 14px">
+<div aria-hidden="true" style="align-self: center; width: 40px; height: 5px; border-radius: 999px; background: #D9D8D2"></div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><h2 style="margin: 0; font-size: 20px; font-weight: 700">Добавьте ME:WISH на экран «Домой»</h2><button type="button" aria-label="Закрыть" style="width: 44px; height: 44px; flex: none; border: none; border-radius: 999px; background: #F4F4EF; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+<p style="margin: -4px 0 0; font-size: 14px; color: #5E6066; line-height: 1.45">Откроется как обычное приложение — без адресной строки. Подсказка всегда есть в профиле.</p>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+<li style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #F4F4EF"><span style="width: 28px; height: 28px; flex: none; border-radius: 999px; background: #17181C; color: #FFFFFF; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center">1</span><span style="flex: 1; font-size: 15px">Нажмите «Поделиться» в Safari</span><span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="stroke:#1E6FF2;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none"><path d="M12 3v12M8 7l4-4 4 4M6 11H5v10h14V11h-1"></path></svg></span></li>
+<li style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #F4F4EF"><span style="width: 28px; height: 28px; flex: none; border-radius: 999px; background: #17181C; color: #FFFFFF; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center">2</span><span style="flex: 1; font-size: 15px">Выберите «На экран «Домой»»</span><span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none"><rect x="4" y="4" width="16" height="16" rx="4"></rect><path d="M12 8v8M8 12h8"></path></svg></span></li>
+<li style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #F4F4EF"><span style="width: 28px; height: 28px; flex: none; border-radius: 999px; background: #17181C; color: #FFFFFF; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center">3</span><span style="flex: 1; font-size: 15px">Нажмите «Добавить» справа вверху</span><span aria-hidden="true" style="padding: 0 10px; height: 36px; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; font-size: 14px; font-weight: 600; color: #1E6FF2">Добавить</span></li>
+</ol>
+<button type="button" style="height: 54px; border: none; border-radius: 18px; background: #C8F56A; font-family: Onest, sans-serif; font-size: 16px; font-weight: 700; color: #17181C; cursor: pointer">Понятно</button>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"loading":{"editor":"boolean","default":false},"offline":{"editor":"boolean","default":false},"install":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const loading = !!this.props.loading;
+    return { loading, ready: !loading, offline: !!this.props.offline, install: !!this.props.install, skel: [1, 2, 3, 4], lists: [
+      { title: 'Мои желания', meta: '7 желаний · 24 760 ₽', date: '', photos: ['p1', 'p3', 'p2', 'p5'], icon: 'heart', color: 'lavender' },
+      { title: 'День рождения', meta: '8 желаний · 61 200 ₽', date: '14 марта', photos: ['p6', 'p4', 'p3'], icon: 'cake', color: 'pink' },
+      { title: 'Для поездок', meta: '2 желания · 1 639 ₽', date: '', photos: ['p5', 'p4'], icon: 'plane', color: 'blue' },
+      { title: 'Новый год', meta: 'Пока пусто', date: '31 декабря', photos: [], icon: 'tree', color: 'mint' }
+    ] };
+  }
+}
+</script>
+</body>
+</html>
