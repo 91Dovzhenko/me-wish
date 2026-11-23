@@ -9,7 +9,7 @@
 | **List** | Список желаний (доска) с настройками |
 | **ListMember** | Участие пользователя в списке с ролью |
 | **Wish** | Само желание: общие данные (название, картинка, цена, ссылка, статус) |
-| **ListItem** | Появление желания в конкретном списке: приоритет, комментарий, позиция |
+| **ListItem** | Появление желания в конкретном списке: приоритет, позиция |
 | **Vote** | Голос редактора за ListItem |
 | **Booking** | Бронь желания дарителем |
 | **Guest** | Даритель без аккаунта, опознаётся по токену |
@@ -23,9 +23,11 @@
 active ──бронь──▶ booked ──отмечено владельцем──▶ gifted
   │                 │
   │                 └─отмена брони──▶ active
-  │                 └─«Куплено сам» (с предупреждением)──▶ purchased
-  └─«Куплено сам»──▶ purchased
+  │                 └─«Куплено» (с предупреждением)──▶ purchased
+  └─«Куплено»──▶ purchased
 ```
+
+Названия в интерфейсе (D-058): `active` — «Хочу», `purchased` — «Куплено», `gifted` — «Подарили», `booked` — «Забронировано».
 
 - `active` — активно, можно бронировать.
 - `booked` — есть действующая бронь (производное от Booking; можно хранить вычисляемо).
@@ -45,10 +47,14 @@ active ──бронь──▶ booked ──отмечено владельц�
 `list_id, user_id, role (editor|viewer), added_at`
 
 ### Wish (общие поля)
-`id, title, description?, image_path?, source_url?, canonical_url?, source_domain?, price?, currency (RUB|USD|EUR)?, status, parse_status (pending|ok|partial|failed|manual), created_by, created_at, updated_at`
+`id, title, description?, image_path?, source_url?, price?, currency (RUB|USD|EUR)?, status, completed_at?, created_by, created_at, updated_at`
+
+`description` — свободный текст: размер, цвет, модель, пожелания (D-063). `source_url` — ссылка без рекламных меток (D-061). Полей разбора (`canonical_url`, `source_domain`, `parse_status`) нет — автозаполнения нет (D-059).
+
+`completed_at` — когда карточка перешла в `purchased` или `gifted` (сбрасывается при возврате в `active`). Нужно для «исполнено за год» на дашборде (D-050).
 
 ### ListItem (поля конкретного списка)
-`id, list_id, wish_id, priority (1–5)?, comment?, position, added_by, added_at, deleted_at?`
+`id, list_id, wish_id, priority (1–5)?, position, added_by, added_at, deleted_at?`
 
 ### Vote
 `list_item_id, user_id, value (approve|reject), updated_at` — один голос на пару.

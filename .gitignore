@@ -8,3 +8,6 @@ supabase/.temp/
 dev-dist/
 *.local
 .claude/launch.json
+
+# Скриншоты-референсы с личными данными (не публиковать)
+docs/design/references-private/
