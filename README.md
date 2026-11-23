@@ -34,7 +34,7 @@ npm run dev            # http://localhost:5173/me-wish/
 ## Устройство
 
 - `src/` — фронтенд (React + TypeScript + Vite, Tailwind CSS, React Router)
-- `supabase/` — `migrations/`, `functions/`, `config.toml` (Supabase CLI)
+- `supabase/` — `migrations/`, `functions/`, `tests/` (проверка RLS), `config.toml` (Supabase CLI)
 - `public/` — статика, иконки PWA, `404.html` для прямых ссылок
 - `docs/` — документация; технические заметки — `docs/tech/`
 

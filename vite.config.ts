@@ -26,8 +26,8 @@ export default defineConfig({
         display: 'standalone',
         start_url: BASE,
         scope: BASE,
-        theme_color: '#6d4aff',
-        background_color: '#ffffff',
+        theme_color: '#f4f4ef',
+        background_color: '#f4f4ef',
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -42,6 +42,11 @@ export default defineConfig({
       workbox: {
         // SPA: любые адреса внутри /me-wish/ отдаём из index.html
         navigateFallback: `${BASE}index.html`,
+        // шрифты: только кириллица и латиница (остальные наборы браузер грузит по необходимости)
+        globPatterns: [
+          '**/*.{js,css,html,svg,png}',
+          'assets/*-{cyrillic,latin}-wght-normal-*.woff2',
+        ],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,

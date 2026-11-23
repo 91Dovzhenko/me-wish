@@ -6,18 +6,15 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey)
 
 // Публичный ключ (publishable / anon) — его можно отдавать в браузер, доступ ограничивает RLS.
-export const supabase = isSupabaseConfigured ? createClient(supabaseUrl, supabaseKey) : null
-
-/** Проверка связи: запрос к health-эндпоинту Auth проекта. */
-export async function checkSupabaseConnection(signal?: AbortSignal): Promise<boolean> {
-  if (!isSupabaseConfigured) return false
-  try {
-    const res = await fetch(`${supabaseUrl}/auth/v1/health`, {
-      headers: { apikey: supabaseKey },
-      signal,
+// PKCE: Google возвращает ?code=…, обмен на сессию делает AuthProvider сам (detectSessionInUrl: false),
+// чтобы показать «Входим…» и ошибку входа по макету.
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        flowType: 'pkce',
+        detectSessionInUrl: false,
+        persistSession: true,
+        autoRefreshToken: true,
+      },
     })
-    return res.ok
-  } catch {
-    return false
-  }
-}
+  : null
