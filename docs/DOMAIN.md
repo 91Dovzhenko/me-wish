@@ -41,7 +41,7 @@ active ──бронь──▶ booked ──отмечено владельц�
 ## 3. Поля
 
 ### List
-`id, title, description, event_date?, cover_wish_id?, visibility (private|link), public_slug?, booking_enabled, anonymity_mode (choice|anonymous_only|open_only), voting_enabled, archived_at?, created_by, created_at`
+`id, title, icon, description, event_date?, cover_wish_id?, visibility (private|link), public_slug?, booking_enabled, anonymity_mode (choice|anonymous_only|open_only), voting_enabled, archived_at?, created_by, created_at`
 
 ### ListMember
 `list_id, user_id, role (editor|viewer), added_at`
