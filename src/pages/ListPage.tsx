@@ -235,10 +235,13 @@ function ListMenu({ list, isLast }: { list: ListSummary; isLast: boolean }) {
       </button>
       {open ? (
         <>
-          {/* Телефон: лёгкое затемнение под меню */}
+          {/* Телефон: лёгкое затемнение под меню. Оно лежит внутри rootRef и закрывает весь экран
+              вместе с кнопкой «•••», поэтому useDismiss считает нажатие на него «внутренним» —
+              закрываем меню нажатием на само затемнение. */}
           <div
             aria-hidden="true"
-            className="fade-in fixed inset-0 z-20 bg-[rgba(23,24,28,0.12)] lg:hidden"
+            onClick={() => setOpen(false)}
+            className="fade-in fixed inset-0 z-20 cursor-pointer bg-[rgba(23,24,28,0.12)] lg:hidden"
           />
           <MenuPanel
             label="Меню списка"

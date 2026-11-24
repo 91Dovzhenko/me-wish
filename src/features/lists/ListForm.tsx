@@ -49,7 +49,7 @@ type Props = {
 
 /**
  * Форма списка — Mobile-NewList / Desktop-NewList (создание) и Mobile-ListSettings / Desktop-ListSettings (настройки).
- * Выбор обложки — только в настройках, как на макете (решение владельца, 003-b).
+ * Выбор обложки — и при создании, и в настройках, по умолчанию «Коллаж» (D-102).
  */
 export default function ListForm({ list, isLast, onSubmit, onDelete, onClose }: Props) {
   const isEdit = !!list
@@ -241,15 +241,13 @@ export default function ListForm({ list, isLast, onSubmit, onDelete, onClose }: 
             </div>
           </fieldset>
 
-          {isEdit ? (
-            <CoverPicker
-              value={f.coverMode}
-              icon={f.icon}
-              color={f.color}
-              onChange={(v) => set('coverMode', v)}
-              isDesktop={isDesktop}
-            />
-          ) : null}
+          <CoverPicker
+            value={f.coverMode}
+            icon={f.icon}
+            color={f.color}
+            onChange={(v) => set('coverMode', v)}
+            isDesktop={isDesktop}
+          />
 
           {/* На телефоне «Удалить список» — внизу формы, над кнопкой «Сохранить» */}
           {!isDesktop ? deleteButton : null}
