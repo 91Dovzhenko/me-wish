@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import Dialog from '../../components/Dialog.tsx'
-import { useToast } from '../../components/Toast.tsx'
+import { SAVE_ERROR, useToast } from '../../components/Toast.tsx'
 import { LastListError, useAppData, type ListSummary } from '../../data/AppData.tsx'
 import { plural } from '../../lib/format.ts'
 import ListForm from './ListForm.tsx'
@@ -16,8 +16,6 @@ type ListActionsValue = {
 }
 
 const ListActionsContext = createContext<ListActionsValue | null>(null)
-
-const SAVE_ERROR = 'Не получилось сохранить — проверьте интернет'
 
 /** Форма списка и удаление — общие для главной, бокового меню и экрана списка. */
 export function ListActionsProvider({ children }: { children: ReactNode }) {

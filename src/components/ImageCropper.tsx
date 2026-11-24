@@ -366,8 +366,8 @@ export default function ImageCropper({
             </button>
           </div>
           <p className="m-0 -mt-1.5 text-center text-[13px] text-text-2">
-            Масштаб — ползунком, колесом мыши или жестом трекпада. Рамка всегда{' '}
-            {shape === 'circle' ? 'круглая' : 'квадратная'}.
+            Масштаб — ползунком, колесом мыши или жестом трекпада.{' '}
+            {shape === 'circle' ? 'Рамка круглая.' : 'Рамка всегда квадратная.'}
           </p>
           <div className="flex justify-end gap-2.5">
             <button
@@ -439,7 +439,9 @@ export default function ImageCropper({
         <p className="m-0 text-center text-[13px] text-[#b5b6bb]">
           Двигайте фото пальцем, приближайте двумя пальцами.
           <br />
-          Рамка всегда {shape === 'circle' ? 'круглая' : 'квадратная'}.
+          {shape === 'circle'
+            ? 'Рамка круглая — так фото будет видно везде.'
+            : 'Рамка всегда квадратная.'}
         </p>
       </div>
     </div>,

@@ -7,6 +7,7 @@ import ImageCropper from '../../components/ImageCropper.tsx'
 import ListIcon from '../../components/ListIcon.tsx'
 import { useDismiss } from '../../components/Menu.tsx'
 import TextField from '../../components/TextField.tsx'
+import { SAVE_ERROR, useToast } from '../../components/Toast.tsx'
 import type { ListSummary, NewWish, WishFields } from '../../data/AppData.tsx'
 import { useIsDesktop } from '../../hooks/useIsDesktop.ts'
 import { firstImageFile } from '../../lib/image.ts'
@@ -88,6 +89,7 @@ export default function WishForm({
   const [nameError, setNameError] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  const toast = useToast()
   const [askDiscard, setAskDiscard] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
@@ -160,6 +162,8 @@ export default function WishForm({
       console.warn(edit ? 'Не удалось сохранить желание:' : 'Не удалось добавить желание:', e)
       setSaving(false)
       setSaveError(true)
+      // форма остаётся открытой, введённое не пропадает (Spec-Feedback)
+      toast({ text: SAVE_ERROR, kind: 'error' })
       return
     }
     if (photo) {

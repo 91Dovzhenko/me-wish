@@ -14,7 +14,7 @@ import {
 } from '../../components/Icons.tsx'
 import ListIcon from '../../components/ListIcon.tsx'
 import { MenuDivider, MenuItem, MenuPanel, useDismiss } from '../../components/Menu.tsx'
-import { useToast } from '../../components/Toast.tsx'
+import { SAVE_ERROR, useToast } from '../../components/Toast.tsx'
 import { PhotoSquare } from '../../components/WishCard.tsx'
 import {
   isDone,
@@ -89,8 +89,7 @@ export default function WishSheet({ item, list, onClose }: Props) {
     }
   }, [])
 
-  const failed = () =>
-    toast({ text: 'Не получилось сохранить — проверьте интернет', kind: 'error' })
+  const failed = () => toast({ text: SAVE_ERROR, kind: 'error' })
 
   const choosePriority = (n: number) => {
     setOverlay(null)
@@ -126,7 +125,7 @@ export default function WishSheet({ item, list, onClose }: Props) {
           // «Отменить» могли нажать раньше, чем база удалила, — дожидаемся
           trashing
             .then(() => data.restoreItem(item))
-            .catch(() => toast({ text: 'Не получилось вернуть желание', kind: 'error' }))
+            .catch(() => toast({ text: SAVE_ERROR, kind: 'error' }))
         },
       },
     })

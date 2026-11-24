@@ -99,14 +99,15 @@ function toBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob | null> {
 }
 
 /**
- * Вырезает квадрат и сжимает до 800×800 (меньше — если сам квадрат меньше, без растягивания).
+ * Вырезает квадрат и сжимает до 800×800 (аватар — до 400×400; меньше — если сам квадрат меньше, без растягивания).
  * Формат WEBP; Safari на iPhone WEBP не кодирует — тогда JPEG. Прозрачность — на белом фоне.
  */
 export async function renderSquare(
   img: HTMLImageElement,
   crop: CropRect,
+  maxSide: number = PHOTO_SIDE,
 ): Promise<{ blob: Blob; ext: 'webp' | 'jpg' }> {
-  const side = Math.max(1, Math.min(PHOTO_SIDE, Math.round(crop.size)))
+  const side = Math.max(1, Math.min(maxSide, Math.round(crop.size)))
   const canvas = document.createElement('canvas')
   canvas.width = side
   canvas.height = side

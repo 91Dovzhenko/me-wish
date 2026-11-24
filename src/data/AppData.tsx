@@ -10,13 +10,33 @@ import {
 } from 'react'
 import { useAuth } from '../auth/AuthProvider.tsx'
 import { asListColor, asListIcon, type ListColor, type ListIconName } from '../lib/listStyle.ts'
+import { removePhotos } from '../lib/photos.ts'
 import { supabase } from '../lib/supabase.ts'
 
 export type Profile = {
   id: string
   displayName: string
+  /** аватар из Google (Telegram — 003-f) */
   avatarUrl: string | null
+  /** своё фото в бакете avatars — главнее avatarUrl (D-091) */
+  avatarPath: string | null
   defaultListId: string | null
+}
+
+/** Изменяемые поля профиля. */
+export type ProfilePatch = Partial<Pick<Profile, 'displayName' | 'avatarPath' | 'defaultListId'>>
+
+/** Желание в корзине (trash_items): из какого списка и жив ли он. */
+export type TrashItem = {
+  itemId: string
+  wishId: string
+  title: string
+  imagePath: string | null
+  listId: string
+  listTitle: string
+  listAlive: boolean
+  deletedAt: string
+  addedAt: string
 }
 
 export type CoverMode = 'collage' | 'icon'
@@ -105,7 +125,7 @@ type ListMeta = Omit<
 >
 
 /** Снимок данных пользователя: всё, что на экране, считается из него (сводки не расходятся с сеткой). */
-type Snapshot = { profile: Profile; lists: ListMeta[]; items: WishItem[] }
+type Snapshot = { profile: Profile; lists: ListMeta[]; items: WishItem[]; trash: TrashItem[] }
 
 type State = { status: 'loading' } | { status: 'error' } | ({ status: 'ready' } & Snapshot)
 
@@ -116,6 +136,8 @@ type Ready = {
   dashboard: Dashboard
   /** все желания всех списков пользователя (не в корзине) */
   items: WishItem[]
+  /** корзина: новые удалённые первыми */
+  trash: TrashItem[]
 }
 
 type AppDataValue = ({ status: 'loading' } | { status: 'error' } | Ready) & {
@@ -141,6 +163,11 @@ type AppDataValue = ({ status: 'loading' } | { status: 'error' } | Ready) & {
   trashItem: (itemId: string) => Promise<void>
   /** «Отменить» после удаления */
   restoreItem: (item: WishItem) => Promise<void>
+  /** «Восстановить» из корзины: на место или (если списка нет) в выбранный список */
+  restoreFromTrash: (item: TrashItem, listId?: string) => Promise<void>
+  /** «Очистить корзину»: навсегда, вместе с фото */
+  emptyTrash: (itemIds: string[]) => Promise<void>
+  updateProfile: (patch: ProfilePatch) => Promise<void>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -159,6 +186,18 @@ function toRow(f: ListFields) {
     color: f.color,
     cover_mode: f.coverMode,
   }
+}
+
+type TrashRow = {
+  item_id: string
+  wish_id: string
+  title: string
+  image_path: string | null
+  list_id: string
+  list_title: string
+  list_alive: boolean
+  deleted_at: string
+  added_at: string
 }
 
 type ItemRow = {
@@ -180,13 +219,13 @@ type ItemRow = {
 
 const AppDataContext = createContext<AppDataValue | null>(null)
 
-/** Профиль, списки и все желания — три запроса одновременно, результат применяется целиком. */
+/** Профиль, списки, все желания и корзина — запросы одновременно, результат применяется целиком. */
 async function load(userId: string): Promise<Snapshot> {
   const db = supabase!
-  const [profileRes, listsRes, itemsRes] = await Promise.all([
+  const [profileRes, listsRes, itemsRes, trashRes] = await Promise.all([
     db
       .from('profiles')
-      .select('id, display_name, avatar_url, default_list_id')
+      .select('id, display_name, avatar_url, avatar_path, default_list_id')
       .eq('id', userId)
       .single(),
     // удалённые списки RLS не отдаёт
@@ -203,10 +242,13 @@ async function load(userId: string): Promise<Snapshot> {
       .is('deleted_at', null)
       .order('added_at', { ascending: false })
       .order('id', { ascending: true }),
+    // корзина — с названиями удалённых списков, которые lists не отдаёт
+    db.rpc('trash_items'),
   ])
   if (profileRes.error) throw profileRes.error
   if (listsRes.error) throw listsRes.error
   if (itemsRes.error) throw itemsRes.error
+  if (trashRes.error) throw trashRes.error
 
   const p = profileRes.data
   const lists = listsRes.data.map((l): ListMeta => ({
@@ -240,10 +282,22 @@ async function load(userId: string): Promise<Snapshot> {
       id: p.id,
       displayName: p.display_name,
       avatarUrl: p.avatar_url,
+      avatarPath: p.avatar_path,
       defaultListId: p.default_list_id,
     },
     lists,
     items,
+    trash: ((trashRes.data ?? []) as TrashRow[]).map((t): TrashItem => ({
+      itemId: t.item_id,
+      wishId: t.wish_id,
+      title: t.title,
+      imagePath: t.image_path,
+      listId: t.list_id,
+      listTitle: t.list_title,
+      listAlive: t.list_alive,
+      deletedAt: t.deleted_at,
+      addedAt: t.added_at,
+    })),
   }
 }
 
@@ -317,7 +371,7 @@ function derive(s: Snapshot): Omit<Ready, 'status' | 'profile'> {
       dashboard.doneSum += it.price ?? 0
     }
   }
-  return { lists, dashboard, items: s.items }
+  return { lists, dashboard, items: s.items, trash: s.trash }
 }
 
 /** Изменить одно желание в снимке. */
@@ -669,7 +723,31 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const trashItem = useCallback(
     (itemId: string) =>
       mutate(
-        (s) => ({ ...s, items: s.items.filter((it) => it.itemId !== itemId) }),
+        (s) => {
+          const it = s.items.find((x) => x.itemId === itemId)
+          const list = it ? s.lists.find((l) => l.id === it.listId) : undefined
+          const trashed: TrashItem[] =
+            it && list
+              ? [
+                  {
+                    itemId,
+                    wishId: it.wishId,
+                    title: it.title,
+                    imagePath: it.imagePath,
+                    listId: it.listId,
+                    listTitle: list.title,
+                    listAlive: true,
+                    deletedAt: new Date().toISOString(),
+                    addedAt: it.addedAt,
+                  },
+                ]
+              : []
+          return {
+            ...s,
+            items: s.items.filter((x) => x.itemId !== itemId),
+            trash: [...trashed, ...s.trash.filter((t) => t.itemId !== itemId)],
+          }
+        },
         async () => {
           const { error } = await supabase!.rpc('trash_list_item', { p_item_id: itemId })
           if (error) throw error
@@ -684,6 +762,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         (s) => ({
           ...s,
           items: s.items.some((it) => it.itemId === item.itemId) ? s.items : [...s.items, item],
+          trash: s.trash.filter((t) => t.itemId !== item.itemId),
         }),
         async () => {
           const { error } = await supabase!.rpc('restore_list_item', { p_item_id: item.itemId })
@@ -691,6 +770,61 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         },
       ),
     [mutate],
+  )
+
+  const restoreFromTrash = useCallback(
+    (t: TrashItem, listId?: string) =>
+      mutate(
+        // на экране сразу убираем из корзины; в сетку желание вернёт сверка с базой
+        (s) => ({ ...s, trash: s.trash.filter((x) => x.itemId !== t.itemId) }),
+        async () => {
+          const { error } =
+            listId && listId !== t.listId
+              ? await supabase!.rpc('restore_list_item_to', {
+                  p_item_id: t.itemId,
+                  p_list_id: listId,
+                })
+              : await supabase!.rpc('restore_list_item', { p_item_id: t.itemId })
+          if (error) throw error
+        },
+      ),
+    [mutate],
+  )
+
+  const emptyTrash = useCallback(
+    (itemIds: string[]) =>
+      mutate(
+        (s) => ({ ...s, trash: s.trash.filter((t) => !itemIds.includes(t.itemId)) }),
+        async () => {
+          const { data, error } = await supabase!.rpc('empty_trash', { p_item_ids: itemIds })
+          if (error) throw error
+          // файлы удалённых навсегда желаний; что не удалится — подберёт ночная уборка (storage-cleanup)
+          removePhotos(((data ?? []) as string[]).filter(Boolean))
+        },
+      ),
+    [mutate],
+  )
+
+  const updateProfile = useCallback(
+    (patch: ProfilePatch) =>
+      mutate(
+        (s) => ({
+          ...s,
+          profile: {
+            ...s.profile,
+            ...patch,
+            ...(patch.displayName !== undefined ? { displayName: patch.displayName.trim() } : {}),
+          },
+        }),
+        async () => {
+          const row: Record<string, string | null> = {}
+          if (patch.displayName !== undefined) row.display_name = patch.displayName.trim()
+          if (patch.avatarPath !== undefined) row.avatar_path = patch.avatarPath
+          if (patch.defaultListId !== undefined) row.default_list_id = patch.defaultListId
+          check(await supabase!.from('profiles').update(row).eq('id', userId!).select('id'), true)
+        },
+      ),
+    [mutate, userId],
   )
 
   const derived = useMemo(() => (state.status === 'ready' ? derive(state) : null), [state])
@@ -720,6 +854,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         moveItem,
         trashItem,
         restoreItem,
+        restoreFromTrash,
+        emptyTrash,
+        updateProfile,
       }}
     >
       {children}

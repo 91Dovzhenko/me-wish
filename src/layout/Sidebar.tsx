@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { NavLink } from 'react-router'
+import { Link, NavLink, useLocation } from 'react-router'
 import { useAuth } from '../auth/AuthProvider.tsx'
-import Avatar from '../components/Avatar.tsx'
 import {
   ChevronUpIcon,
   HomeIcon,
@@ -12,6 +11,7 @@ import {
 } from '../components/Icons.tsx'
 import ListIcon from '../components/ListIcon.tsx'
 import Logo from '../components/Logo.tsx'
+import ProfileAvatar from '../components/ProfileAvatar.tsx'
 import { SkeletonBlock } from '../components/Skeleton.tsx'
 import { useAppData } from '../data/AppData.tsx'
 import { useListActions } from '../features/lists/ListActions.tsx'
@@ -154,6 +154,9 @@ function ProfileButton() {
   }, [open])
 
   const name = data.status === 'ready' ? data.profile.displayName : ''
+  const { pathname } = useLocation()
+  const onProfile = pathname === '/profile'
+  const onTrash = pathname === '/trash'
 
   return (
     <div ref={rootRef} className="relative mt-auto">
@@ -163,27 +166,33 @@ function ProfileButton() {
           aria-label="Профиль"
           className="absolute right-0 bottom-[62px] left-0 flex flex-col rounded-[18px] bg-surface p-1.5 shadow-[0_20px_50px_rgba(23,24,28,0.2),0_0_0_1px_var(--divider)]"
         >
-          {/* «Профиль» и «Корзина» оживут в 003-e */}
-          <button
-            type="button"
+          <Link
+            to="/profile"
             role="menuitem"
-            aria-disabled="true"
-            title="Скоро"
-            className="flex h-11 cursor-default items-center gap-2.5 rounded-item px-3 text-left text-sm hover:bg-bg"
+            onClick={() => setOpen(false)}
+            className={`flex h-11 items-center gap-2.5 rounded-item px-3 text-sm hover:bg-bg ${
+              onProfile ? 'bg-bg' : ''
+            }`}
           >
             <UserIcon size={17} />
             Профиль
-          </button>
-          <button
-            type="button"
+          </Link>
+          <Link
+            to="/trash"
             role="menuitem"
-            aria-disabled="true"
-            title="Скоро"
-            className="flex h-11 cursor-default items-center gap-2.5 rounded-item px-3 text-left text-sm hover:bg-bg"
+            onClick={() => setOpen(false)}
+            className={`flex h-11 items-center justify-between rounded-item px-3 hover:bg-bg ${
+              onTrash ? 'bg-bg' : ''
+            }`}
           >
-            <TrashIcon size={17} />
-            Корзина
-          </button>
+            <span className="flex items-center gap-2.5 text-sm">
+              <TrashIcon size={17} />
+              Корзина
+            </span>
+            <span className="text-[13px] text-text-2">
+              {data.status === 'ready' && data.trash.length > 0 ? data.trash.length : ''}
+            </span>
+          </Link>
           <div aria-hidden="true" className="mx-2 my-1 h-px bg-divider" />
           <button
             type="button"
@@ -202,14 +211,10 @@ function ProfileButton() {
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={`flex h-[52px] w-full cursor-pointer items-center gap-2.5 rounded-[14px] px-2.5 text-left transition-colors hover:bg-bg ${
-          open ? 'bg-bg' : ''
+          open || onProfile ? 'bg-bg' : ''
         }`}
       >
-        {data.status === 'ready' ? (
-          <Avatar name={name} src={data.profile.avatarUrl} size={32} />
-        ) : (
-          <SkeletonBlock className="size-8 rounded-full" />
-        )}
+        <ProfileAvatar size={32} />
         <span className="min-w-0 flex-1 truncate text-sm font-semibold">
           {name ? firstName(name) : ''}
         </span>

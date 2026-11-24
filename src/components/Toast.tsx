@@ -13,6 +13,9 @@ import { CheckIcon } from './Icons.tsx'
 // Тосты — Toast.dc.html / Spec-Feedback: тёмная плашка внизу экрана (на телефоне — слева от «+»).
 // Обычный исчезает через 4 секунды, с действием — через 6 (D-096).
 
+/** Ошибка сохранения — одна на всё приложение (Spec-Feedback). */
+export const SAVE_ERROR = 'Не получилось сохранить — проверьте интернет'
+
 type ToastInput = {
   text: string
   kind?: 'ok' | 'error'

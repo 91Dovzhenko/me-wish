@@ -20,8 +20,8 @@ export default defineConfig({
       injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'me:wish',
-        short_name: 'me:wish',
+        name: 'ME:WISH',
+        short_name: 'ME:WISH',
         description: 'Списки желаний, где карточка создаётся из ссылки',
         lang: 'ru',
         display: 'standalone',

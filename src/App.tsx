@@ -7,6 +7,7 @@ import ListPage from './pages/ListPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
 import ProfilePage from './pages/ProfilePage.tsx'
+import TrashPage from './pages/TrashPage.tsx'
 
 // Проверка коллажа на подставных фото — только в режиме разработки, в сборку не попадает
 const DevCoversPage = import.meta.env.DEV
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/l/:listId/*" element={<ListPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/trash" element={<TrashPage />} />
           {import.meta.env.DEV ? <Route path="/dev/covers" element={<DevCoversPage />} /> : null}
           <Route path="*" element={<NotFoundPage />} />
         </Route>

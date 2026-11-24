@@ -1,9 +1,11 @@
-// Фото желаний в Supabase Storage (бакет wish-photos, закрытый — docs/tech/wishes.md).
-// Путь: <user_id>/<wish_id>.webp|jpg. Показ — по подписанным ссылкам на час, с кэшем в памяти.
+// Фото в Supabase Storage: желания (бакет wish-photos — docs/tech/wishes.md) и аватары (бакет avatars — 003-e).
+// Оба бакета закрытые. Путь: <user_id>/<uuid>.webp|jpg. Показ — по подписанным ссылкам на час, с кэшем в памяти.
 import { useEffect, useState } from 'react'
 import { supabase, supabaseUrl } from './supabase.ts'
 
 export const PHOTO_BUCKET = 'wish-photos'
+export const AVATAR_BUCKET = 'avatars'
+export type Bucket = typeof PHOTO_BUCKET | typeof AVATAR_BUCKET
 const SIGN_SECONDS = 60 * 60
 /** ссылку перевыпускаем заранее, за 10 минут до конца срока */
 const SIGN_MARGIN_MS = 10 * 60 * 1000
@@ -15,65 +17,71 @@ export function photoPath(userId: string, wishId: string, ext: 'webp' | 'jpg') {
 // ─── Подписанные ссылки ─────────────────────────────────────
 
 type Signed = { url: string; expires: number }
+// ключ кэша — бакет + путь
 const cache = new Map<string, Signed>()
 const pending = new Map<string, Promise<void>>()
+const k = (bucket: Bucket, path: string) => `${bucket}:${path}`
 
 /** Только что загруженное фото показываем из памяти браузера — без запроса к Storage. */
-export function rememberLocalPhoto(path: string, blob: Blob) {
-  cache.set(path, { url: URL.createObjectURL(blob), expires: Number.POSITIVE_INFINITY })
+export function rememberLocalPhoto(path: string, blob: Blob, bucket: Bucket = PHOTO_BUCKET) {
+  cache.set(k(bucket, path), { url: URL.createObjectURL(blob), expires: Number.POSITIVE_INFINITY })
 }
 
-function fresh(path: string): string | null {
-  const s = cache.get(path)
+function fresh(bucket: Bucket, path: string): string | null {
+  const s = cache.get(k(bucket, path))
   return s && s.expires - SIGN_MARGIN_MS > Date.now() ? s.url : null
 }
 
-async function signMissing(paths: string[]) {
-  const missing = paths.filter((p) => !fresh(p) && !pending.has(p))
+async function signMissing(bucket: Bucket, paths: string[]) {
+  const missing = paths.filter((p) => !fresh(bucket, p) && !pending.has(k(bucket, p)))
   if (missing.length > 0 && supabase) {
     const job = supabase.storage
-      .from(PHOTO_BUCKET)
+      .from(bucket)
       .createSignedUrls(missing, SIGN_SECONDS)
       .then(({ data, error }) => {
         if (error) throw error
         const expires = Date.now() + SIGN_SECONDS * 1000
         for (const item of data ?? []) {
-          if (item.path && item.signedUrl) cache.set(item.path, { url: item.signedUrl, expires })
+          if (item.path && item.signedUrl)
+            cache.set(k(bucket, item.path), { url: item.signedUrl, expires })
         }
       })
-      .finally(() => missing.forEach((p) => pending.delete(p)))
-    missing.forEach((p) => pending.set(p, job))
+      .finally(() => missing.forEach((p) => pending.delete(k(bucket, p))))
+    missing.forEach((p) => pending.set(k(bucket, p), job))
   }
-  await Promise.all(paths.map((p) => pending.get(p)).filter(Boolean))
+  await Promise.all(paths.map((p) => pending.get(k(bucket, p))).filter(Boolean))
 }
 
-function snapshot(paths: string[]): Record<string, string> {
+function snapshot(bucket: Bucket, paths: string[]): Record<string, string> {
   const out: Record<string, string> = {}
   for (const p of paths) {
-    const url = fresh(p)
+    const url = fresh(bucket, p)
     if (url) out[p] = url
   }
   return out
 }
 
 /** Адреса для показа фото по путям в Storage. Пока ссылка не получена — пути нет в ответе. */
-export function usePhotoUrls(paths: (string | null | undefined)[]): Record<string, string> {
+export function usePhotoUrls(
+  paths: (string | null | undefined)[],
+  bucket: Bucket = PHOTO_BUCKET,
+): Record<string, string> {
   const list = [...new Set(paths.filter((p): p is string => !!p))].sort()
   const key = list.join('|')
-  const [urls, setUrls] = useState<Record<string, string>>(() => snapshot(list))
+  const [urls, setUrls] = useState<Record<string, string>>(() => snapshot(bucket, list))
 
   useEffect(() => {
     const wanted = key ? key.split('|') : []
     let alive = true
-    const update = () => alive && setUrls(snapshot(wanted))
+    const update = () => alive && setUrls(snapshot(bucket, wanted))
     update()
-    signMissing(wanted)
+    signMissing(bucket, wanted)
       .then(update)
       .catch((e) => console.warn('Не удалось получить ссылки на фото:', e))
     // перевыпуск ссылок, пока экран открыт дольше срока
     const timer = window.setInterval(
       () => {
-        signMissing(wanted)
+        signMissing(bucket, wanted)
           .then(update)
           .catch(() => {})
       },
@@ -83,7 +91,7 @@ export function usePhotoUrls(paths: (string | null | undefined)[]): Record<strin
       alive = false
       window.clearInterval(timer)
     }
-  }, [key])
+  }, [key, bucket])
 
   return urls
 }
@@ -102,6 +110,7 @@ export async function uploadPhoto(
   blob: Blob,
   onProgress: (percent: number) => void,
   signal?: AbortSignal,
+  bucket: Bucket = PHOTO_BUCKET,
 ): Promise<void> {
   const db = supabase
   if (!db) throw new Error('Supabase не настроен')
@@ -112,7 +121,7 @@ export async function uploadPhoto(
 
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest()
-    xhr.open('POST', `${supabaseUrl}/storage/v1/object/${PHOTO_BUCKET}/${path}`)
+    xhr.open('POST', `${supabaseUrl}/storage/v1/object/${bucket}/${path}`)
     xhr.setRequestHeader('Authorization', `Bearer ${token}`)
     xhr.setRequestHeader('apikey', apikey)
     xhr.setRequestHeader('x-upsert', 'true')
@@ -142,11 +151,16 @@ export async function downloadPhoto(path: string): Promise<Blob> {
 }
 
 /** Удаление загруженного, но не сохранённого фото (или старого — после замены). Ошибки не мешают — это уборка. */
-export function removePhoto(path: string) {
-  cache.delete(path)
+export function removePhoto(path: string, bucket: Bucket = PHOTO_BUCKET) {
+  removePhotos([path], bucket)
+}
+
+export function removePhotos(paths: string[], bucket: Bucket = PHOTO_BUCKET) {
+  if (paths.length === 0) return
+  paths.forEach((p) => cache.delete(k(bucket, p)))
   supabase?.storage
-    .from(PHOTO_BUCKET)
-    .remove([path])
+    .from(bucket)
+    .remove(paths)
     .then(({ error }) => {
       if (error) console.warn('Не удалось удалить фото:', error)
     })

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
 type Props = {
@@ -13,6 +13,8 @@ type Props = {
   busy?: boolean
   onPrimary: () => void
   onSecondary: () => void
+  /** дополнительное поле между текстом и кнопками (выбор списка — Mobile-Trash-Restore) */
+  children?: ReactNode
 }
 
 /**
@@ -28,6 +30,7 @@ export default function Dialog({
   busy,
   onPrimary,
   onSecondary,
+  children,
 }: Props) {
   const cancelRef = useRef<HTMLButtonElement>(null)
   const secondaryRef = useRef(onSecondary)
@@ -73,6 +76,7 @@ export default function Dialog({
             {body}
           </p>
         ) : null}
+        {children}
         <div className="mt-2.5 flex gap-2">
           <button
             ref={cancelRef}

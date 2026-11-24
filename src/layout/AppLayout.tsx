@@ -1,7 +1,9 @@
 import { Outlet } from 'react-router'
+import OfflineBanner from '../components/OfflineBanner.tsx'
 import { ToastProvider } from '../components/Toast.tsx'
 import { AppDataProvider } from '../data/AppData.tsx'
 import { ListActionsProvider } from '../features/lists/ListActions.tsx'
+import InstallHint from '../features/install/InstallHint.tsx'
 import { WishActionsProvider } from '../features/wishes/WishActions.tsx'
 import Sidebar from './Sidebar.tsx'
 
@@ -21,9 +23,11 @@ export default function AppLayout() {
                 <Sidebar />
               </div>
               <div className="min-w-0 flex-1">
+                <OfflineBanner />
                 <Outlet />
               </div>
             </div>
+            <InstallHint />
           </WishActionsProvider>
         </ListActionsProvider>
       </ToastProvider>

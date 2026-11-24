@@ -105,3 +105,9 @@ export function formatAddedDate(iso: string): string {
 export function wishCount(n: number): string {
   return n === 0 ? 'пусто' : `${n} ${plural(n, ['желание', 'желания', 'желаний'])}`
 }
+
+/** Сколько дней желание ещё пролежит в корзине (30 дней с удаления, SPEC 5.7); не меньше 1. */
+export function trashDaysLeft(deletedAt: string, now = Date.now()): number {
+  const left = new Date(deletedAt).getTime() + 30 * 86_400_000 - now
+  return Math.max(1, Math.ceil(left / 86_400_000))
+}
