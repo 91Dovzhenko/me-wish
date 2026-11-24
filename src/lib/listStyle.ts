@@ -71,3 +71,48 @@ export function listColorVars(color: ListColor) {
     cover: `var(--list-${color}-cover)`,
   }
 }
+
+/** Подписи иконок для экранных дикторов (из Mobile-NewList). */
+export const LIST_ICON_NAMES: Record<ListIconName, string> = {
+  heart: 'Сердце',
+  gift: 'Подарок',
+  cake: 'День рождения',
+  home: 'Дом',
+  plane: 'Путешествия',
+  suitcase: 'Поездки',
+  shirt: 'Одежда',
+  sneaker: 'Обувь',
+  tech: 'Техника',
+  phone: 'Гаджеты',
+  camera: 'Фото',
+  book: 'Книги',
+  dumbbell: 'Спорт',
+  ball: 'Игры с мячом',
+  child: 'Ребёнок',
+  ring: 'Свадьба',
+  tree: 'Новый год',
+  star: 'Особое',
+  sparkles: 'Впечатления',
+  music: 'Музыка',
+  game: 'Игры',
+  paw: 'Питомцы',
+  coffee: 'Кофе',
+  pot: 'Кухня',
+  flower: 'Цветы',
+  palette: 'Творчество',
+  car: 'Авто',
+  bike: 'Велосипед',
+  tent: 'Походы',
+  gem: 'Украшения',
+}
+
+export const LIST_COLOR_NAMES: Record<ListColor, string> = {
+  lavender: 'Лавандовый',
+  lime: 'Лаймовый',
+  pink: 'Розовый',
+  blue: 'Голубой',
+  peach: 'Персиковый',
+  mint: 'Мятный',
+  sand: 'Песочный',
+  gray: 'Серый',
+}

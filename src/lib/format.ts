@@ -41,3 +41,55 @@ export function initials(name: string): string {
 export function firstName(name: string): string {
   return name.trim().split(/\s+/)[0] || 'Профиль'
 }
+
+const MONTHS_GEN = [
+  'января',
+  'февраля',
+  'марта',
+  'апреля',
+  'мая',
+  'июня',
+  'июля',
+  'августа',
+  'сентября',
+  'октября',
+  'ноября',
+  'декабря',
+]
+
+export const MONTHS_NOM = [
+  'Январь',
+  'Февраль',
+  'Март',
+  'Апрель',
+  'Май',
+  'Июнь',
+  'Июль',
+  'Август',
+  'Сентябрь',
+  'Октябрь',
+  'Ноябрь',
+  'Декабрь',
+]
+
+/** '2027-03-14' → «14 марта 2027» (поле даты в форме списка). */
+export function formatFullDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split('-').map(Number)
+  return `${d} ${MONTHS_GEN[m - 1]} ${y}`
+}
+
+/** «14 марта» для подписи дня в календаре. */
+export function formatDayMonth(d: number, monthIndex: number): string {
+  return `${d} ${MONTHS_GEN[monthIndex]}`
+}
+
+/** Дата → 'YYYY-MM-DD' по местному времени. */
+export function toIsoDate(date: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}`
+}
+
+/** «Активные 5 · 24 760 ₽»: число и сумма. */
+export function countSum(count: number, sum: number): string {
+  return `${count} · ${formatRub(sum)}`
+}

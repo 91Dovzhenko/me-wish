@@ -85,9 +85,13 @@ begin
   update public.lists set title = 'взлом' where id = a_list;
   get diagnostics n = row_count;
   if n = 0 then ok := ok + 1; else bad := bad || ' [B изменил список A]'; end if;
-  delete from public.lists where id = a_list;
-  get diagnostics n = row_count;
-  if n = 0 then ok := ok + 1; else bad := bad || ' [B удалил список A]'; end if;
+  -- с 003-b удалять строки lists запрещено всем (только delete_list)
+  begin
+    delete from public.lists where id = a_list;
+    get diagnostics n = row_count;
+    if n = 0 then ok := ok + 1; else bad := bad || ' [B удалил список A]'; end if;
+  exception when insufficient_privilege then ok := ok + 1;
+  end;
   update public.wishes set title = 'взлом' where id = a_wish;
   get diagnostics n = row_count;
   if n = 0 then ok := ok + 1; else bad := bad || ' [B изменил желание A]'; end if;

@@ -45,6 +45,23 @@ export const AlertIcon = (p: IconProps) => (
   <Line strokeWidth={2} {...p} d="M12 8v5M12 16.5h.01M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />
 )
 
+export const CloseIcon = (p: IconProps) => <Line strokeWidth={2} {...p} d="M6 6l12 12M18 6L6 18" />
+export const MoreIcon = (p: IconProps) => (
+  <Line strokeWidth={3} {...p} d="M5 12h.01M12 12h.01M19 12h.01" />
+)
+export const EditIcon = (p: IconProps) => <Line {...p} d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4" />
+export const CalendarIcon = (p: IconProps) => (
+  <Line
+    {...p}
+    d="M7 5h10a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3zM4 10h16M9 3v4M15 3v4"
+  />
+)
+export const SortIcon = (p: IconProps) => (
+  <Line strokeWidth={2} {...p} d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4" />
+)
+export const ChevronLeftIcon = (p: IconProps) => <Line strokeWidth={2} {...p} d="M15 5l-7 7 7 7" />
+export const ChevronRightIcon = (p: IconProps) => <Line strokeWidth={2} {...p} d="M9 5l7 7-7 7" />
+
 export function TelegramIcon({ size = 20, ...rest }: IconProps) {
   return (
     <svg

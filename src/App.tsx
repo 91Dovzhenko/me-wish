@@ -1,10 +1,17 @@
+import { lazy } from 'react'
 import { Navigate, Outlet, Route, Routes } from 'react-router'
 import { useAuth } from './auth/AuthProvider.tsx'
 import AppLayout from './layout/AppLayout.tsx'
 import HomePage from './pages/HomePage.tsx'
+import ListPage from './pages/ListPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
 import ProfilePage from './pages/ProfilePage.tsx'
+
+// Проверка коллажа на подставных фото — только в режиме разработки, в сборку не попадает
+const DevCoversPage = import.meta.env.DEV
+  ? lazy(() => import('./pages/DevCoversPage.tsx'))
+  : () => null
 
 /** Пока не вошёл — любой адрес, кроме экрана входа, ведёт на вход. */
 function RequireAuth() {
@@ -21,7 +28,9 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/l/:listId" element={<ListPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          {import.meta.env.DEV ? <Route path="/dev/covers" element={<DevCoversPage />} /> : null}
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>

@@ -3,15 +3,17 @@ import Cover from '../components/Cover.tsx'
 import { AlertIcon, CheckIcon, PlusIcon } from '../components/Icons.tsx'
 import { CoverSkeleton, SkeletonBlock } from '../components/Skeleton.tsx'
 import { useAppData, type Dashboard, type ListSummary } from '../data/AppData.tsx'
+import { useListActions } from '../features/lists/ListActions.tsx'
 import MobileHeader from '../layout/MobileHeader.tsx'
 import { formatEventDate, formatRub, listMeta } from '../lib/format.ts'
 
 // Главная: Main / Mobile-FirstRun / Mobile-Home-Loading (телефон),
 // Desktop-Home / Desktop-FirstRun / Desktop-Home-Loading (компьютер).
-// Кнопки добавления и «+ Новый список», нажатие на обложку — оживут в 003-b и 003-c.
+// Кнопки добавления желаний оживут в 003-c.
 
 export default function HomePage() {
   const data = useAppData()
+  const { openCreate } = useListActions()
   const ready = data.status === 'ready'
   const firstRun =
     ready &&
@@ -56,7 +58,7 @@ export default function HomePage() {
                 Мои списки
               </h2>
               {/* На компьютере «+ Новый список» — в боковом меню (D-076) */}
-              <Button variant="link" inactive className="lg:hidden">
+              <Button variant="link" onClick={openCreate} className="lg:hidden">
                 + Новый список
               </Button>
             </div>
@@ -101,6 +103,8 @@ function ListCover({ list }: { list: ListSummary }) {
       date={list.eventDate ? formatEventDate(list.eventDate) : undefined}
       icon={list.icon}
       color={list.color}
+      coverMode={list.coverMode}
+      to={`/l/${list.id}`}
     />
   )
 }

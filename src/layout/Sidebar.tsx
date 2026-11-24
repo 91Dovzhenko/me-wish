@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '../auth/AuthProvider.tsx'
 import Avatar from '../components/Avatar.tsx'
@@ -14,11 +14,12 @@ import ListIcon from '../components/ListIcon.tsx'
 import Logo from '../components/Logo.tsx'
 import { SkeletonBlock } from '../components/Skeleton.tsx'
 import { useAppData } from '../data/AppData.tsx'
+import { useListActions } from '../features/lists/ListActions.tsx'
 import { firstName } from '../lib/format.ts'
 
 /** Боковое меню компьютера — Sidebar.dc.html, вариант Б (D-093): белая скруглённая подложка. */
 export default function Sidebar() {
-  const data = useAppData()
+  const { openCreate } = useListActions()
 
   return (
     <nav
@@ -46,37 +47,11 @@ export default function Sidebar() {
         <span className="px-3 pb-1.5 text-xs font-bold tracking-[0.04em] text-text-2 uppercase">
           Мои списки
         </span>
-        {/* Прокручивается только эта часть, если списков много */}
-        <div className="flex min-h-0 flex-col gap-0.5 overflow-y-auto overscroll-contain">
-          {data.status === 'ready'
-            ? data.lists.map((l) => (
-                // Экран списка появится в 003-b — пока пункт без перехода
-                <div
-                  key={l.id}
-                  className="flex h-11 flex-none items-center gap-2.5 rounded-item px-2.5 text-[15px] font-medium transition-colors hover:bg-bg"
-                  title={l.title}
-                >
-                  <ListIcon icon={l.icon} color={l.color} size={15} box={28} />
-                  <span className="min-w-0 flex-1 truncate">{l.title}</span>
-                  <span className="text-[13px] text-text-2">{l.itemCount}</span>
-                </div>
-              ))
-            : [0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="flex h-11 flex-none items-center gap-2.5 px-2.5"
-                  aria-hidden="true"
-                >
-                  <SkeletonBlock className="size-7 rounded-[9px]" />
-                  <SkeletonBlock className="h-3.5 flex-1 rounded-[7px]" />
-                </div>
-              ))}
-        </div>
+        <SidebarLists />
         <button
           type="button"
-          aria-disabled="true"
-          title="Скоро"
-          className="flex h-11 flex-none cursor-default items-center gap-2.5 rounded-item px-2.5 text-left text-[15px] font-semibold text-accent-2-text"
+          onClick={openCreate}
+          className="flex h-11 flex-none cursor-pointer items-center gap-2.5 rounded-item px-2.5 text-left text-[15px] font-semibold text-accent-2-text transition-colors hover:bg-bg"
         >
           <span className="flex size-7 items-center justify-center rounded-[9px] border-[1.5px] border-dashed border-accent-2">
             <PlusIcon size={14} strokeWidth={2.2} />
@@ -87,6 +62,74 @@ export default function Sidebar() {
 
       <ProfileButton />
     </nav>
+  )
+}
+
+/** Списки: прокручиваются, если их много; внизу лёгкое затухание, пока есть что прокручивать (Desktop-Home-ManyLists). */
+function SidebarLists() {
+  const data = useAppData()
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [fade, setFade] = useState(false)
+
+  const update = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setFade(el.scrollHeight - el.clientHeight - el.scrollTop > 2)
+  }, [])
+
+  const listCount = data.status === 'ready' ? data.lists.length : -1
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [update, listCount])
+
+  return (
+    <div className="relative flex min-h-0 flex-col">
+      <div
+        ref={scrollRef}
+        onScroll={update}
+        className="flex min-h-0 flex-col gap-0.5 overflow-y-auto overscroll-contain"
+      >
+        {data.status === 'ready'
+          ? data.lists.map((l) => (
+              <NavLink
+                key={l.id}
+                to={`/l/${l.id}`}
+                title={l.title}
+                className={({ isActive }) =>
+                  `flex h-11 flex-none items-center gap-2.5 rounded-item px-2.5 text-[15px] transition-colors ${
+                    isActive ? 'bg-accent font-semibold' : 'font-medium hover:bg-bg'
+                  }`
+                }
+              >
+                <ListIcon icon={l.icon} color={l.color} size={15} box={28} />
+                <span className="min-w-0 flex-1 truncate">{l.title}</span>
+                <span className="text-[13px] text-text-2">{l.itemCount}</span>
+              </NavLink>
+            ))
+          : [0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="flex h-11 flex-none items-center gap-2.5 px-2.5"
+                aria-hidden="true"
+              >
+                <SkeletonBlock className="size-7 rounded-[9px]" />
+                <SkeletonBlock className="h-3.5 flex-1 rounded-[7px]" />
+              </div>
+            ))}
+      </div>
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-b from-white/0 to-white transition-opacity ${
+          fade ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+    </div>
   )
 }
 
