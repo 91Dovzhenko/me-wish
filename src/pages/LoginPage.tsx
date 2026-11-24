@@ -6,13 +6,13 @@ import { AlertIcon, TelegramIcon } from '../components/Icons.tsx'
 import Logo from '../components/Logo.tsx'
 
 // Экран входа: Mobile-Login (+ -Loading, -Error) и Desktop-Login (D-094).
-// Вход через Telegram — в ТЗ 003-f, сейчас кнопка неактивна с подписью «скоро».
+// Telegram (003-f) — своя кнопка по макету, вход через переадресацию на oauth.telegram.org (auth/telegram.ts).
 
 const TITLE = 'Все желания — в одном месте'
 const LEAD = 'Скриншот, название, цена — и желание сохранено. Делитесь списками с близкими.'
 
 export default function LoginPage() {
-  const { status, signInWithGoogle } = useAuth()
+  const { status, lastMethod, signInWithGoogle, signInWithTelegram } = useAuth()
   const [starting, setStarting] = useState(false)
 
   // Вернулись со страницы Google кнопкой «Назад» (страница из кэша) — снова показать кнопки
@@ -34,7 +34,20 @@ export default function LoginPage() {
     setStarting(false)
   }
 
-  const actions = <LoginActions loading={loading} error={error} onGoogle={start} />
+  const startTelegram = () => {
+    setStarting(true)
+    signInWithTelegram()
+  }
+
+  const actions = (
+    <LoginActions
+      loading={loading}
+      error={error}
+      onGoogle={start}
+      onTelegram={startTelegram}
+      onRetry={lastMethod === 'telegram' ? startTelegram : start}
+    />
+  )
 
   return (
     <div className="relative min-h-dvh overflow-hidden bg-bg">
@@ -124,10 +137,14 @@ function LoginActions({
   loading,
   error,
   onGoogle,
+  onTelegram,
+  onRetry,
 }: {
   loading: boolean
   error: boolean
   onGoogle: () => void
+  onTelegram: () => void
+  onRetry: () => void
 }) {
   if (loading) {
     return (
@@ -156,7 +173,7 @@ function LoginActions({
         </div>
         <button
           type="button"
-          onClick={onGoogle}
+          onClick={onRetry}
           className="h-14 cursor-pointer rounded-btn bg-text text-base font-semibold text-white hover:bg-[#2a2b31]"
         >
           Попробовать ещё раз
@@ -169,15 +186,11 @@ function LoginActions({
     <div className="flex flex-col gap-3.5">
       <button
         type="button"
-        disabled
-        aria-label="Войти через Telegram — скоро"
-        className="flex h-14 cursor-default items-center justify-center gap-2.5 rounded-btn bg-text text-base font-semibold text-white/55"
+        onClick={onTelegram}
+        className="flex h-14 cursor-pointer items-center justify-center gap-2.5 rounded-btn bg-text text-base font-semibold text-white transition-colors hover:bg-[#2a2b31]"
       >
         <TelegramIcon size={20} />
         Войти через Telegram
-        <span className="rounded-full bg-white/15 px-2 py-0.5 text-xs font-semibold text-white/80">
-          скоро
-        </span>
       </button>
       <button
         type="button"

@@ -431,3 +431,7 @@ enabled = true
 # ТЗ 003-e: уборка Storage по расписанию. Вызывает pg_cron, без JWT — функция проверяет заголовок x-cleanup-secret.
 [functions.storage-cleanup]
 verify_jwt = false
+
+# ТЗ 003-f: вход через Telegram. Браузер вызывает функцию до входа (сессии ещё нет), подпись Telegram проверяет сама функция.
+[functions.telegram-auth]
+verify_jwt = false

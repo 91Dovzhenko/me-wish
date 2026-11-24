@@ -462,14 +462,17 @@ function NameField({ desktop }: { desktop?: boolean }) {
   )
 }
 
-/** Способы входа — только показываем (D-091). Telegram добавится в 003-f. */
+/** Способы входа — только показываем (D-091), без «Подключить». */
 function LoginMethods({ desktop }: { desktop?: boolean }) {
   const { session } = useAuth()
+  const data = useAppData()
   const providers = new Set<string>(
     (session?.user.identities ?? []).map((i) => i.provider).filter(Boolean),
   )
   const appProviders = session?.user.app_metadata?.providers
   if (Array.isArray(appProviders)) appProviders.forEach((p) => providers.add(String(p)))
+  // Telegram — по профилю: telegram_id ставит только сервер при входе через Telegram (003-f)
+  if (data.status === 'ready' && data.profile.telegramId) providers.add('telegram')
 
   const rows: { key: string; title: string; icon: ReactNode; tile: string }[] = []
   if (providers.has('google'))

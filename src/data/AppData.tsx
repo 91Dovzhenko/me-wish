@@ -21,6 +21,8 @@ export type Profile = {
   /** своё фото в бакете avatars — главнее avatarUrl (D-091) */
   avatarPath: string | null
   defaultListId: string | null
+  /** вошёл через Telegram (003-f); ставит только сервер */
+  telegramId: string | null
 }
 
 /** Изменяемые поля профиля. */
@@ -225,7 +227,7 @@ async function load(userId: string): Promise<Snapshot> {
   const [profileRes, listsRes, itemsRes, trashRes] = await Promise.all([
     db
       .from('profiles')
-      .select('id, display_name, avatar_url, avatar_path, default_list_id')
+      .select('id, display_name, avatar_url, avatar_path, default_list_id, telegram_id')
       .eq('id', userId)
       .single(),
     // удалённые списки RLS не отдаёт
@@ -284,6 +286,7 @@ async function load(userId: string): Promise<Snapshot> {
       avatarUrl: p.avatar_url,
       avatarPath: p.avatar_path,
       defaultListId: p.default_list_id,
+      telegramId: p.telegram_id == null ? null : String(p.telegram_id),
     },
     lists,
     items,
