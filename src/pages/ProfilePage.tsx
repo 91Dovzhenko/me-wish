@@ -5,6 +5,19 @@ import { BackIcon } from '../components/Icons.tsx'
 import { SkeletonBlock } from '../components/Skeleton.tsx'
 import { useAppData } from '../data/AppData.tsx'
 
+const BUILD_LABEL = new Date(__BUILD_TIME__).toLocaleString('ru-RU', {
+  day: 'numeric',
+  month: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
+const LIVE_LABEL = {
+  live: 'синхронизация на связи',
+  connecting: 'синхронизация подключается',
+  offline: 'синхронизация не на связи',
+} as const
+
 /**
  * Профиль (Mobile-Profile.dc.html) — на этом ТЗ только имя, аватар и «Выйти».
  * Смена имени и фото, список по умолчанию, способы входа, корзина — в 003-e.
@@ -49,6 +62,11 @@ export default function ProfilePage() {
       >
         Выйти
       </button>
+
+      {/* Для проверки на устройствах: какая сборка работает и на связи ли синхронизация */}
+      <p className="m-0 text-center text-xs text-text-3">
+        Версия от {BUILD_LABEL} · {LIVE_LABEL[data.liveStatus]}
+      </p>
     </main>
   )
 }

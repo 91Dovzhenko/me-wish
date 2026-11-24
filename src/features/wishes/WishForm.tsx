@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Dialog from '../../components/Dialog.tsx'
 import FormWindow from '../../components/FormWindow.tsx'
 import { Heart } from '../../components/Hearts.tsx'
@@ -7,16 +7,22 @@ import ImageCropper from '../../components/ImageCropper.tsx'
 import ListIcon from '../../components/ListIcon.tsx'
 import { useDismiss } from '../../components/Menu.tsx'
 import TextField from '../../components/TextField.tsx'
-import type { ListSummary, NewWish } from '../../data/AppData.tsx'
+import type { ListSummary, NewWish, WishFields } from '../../data/AppData.tsx'
 import { useIsDesktop } from '../../hooks/useIsDesktop.ts'
 import { firstImageFile } from '../../lib/image.ts'
-import { rememberLocalPhoto } from '../../lib/photos.ts'
+import { rememberLocalPhoto, removePhoto, usePhotoUrls } from '../../lib/photos.ts'
 import { priorityLabel } from '../../lib/priority.ts'
 import { extractUrl } from '../../lib/url.ts'
-import PhotoField from './PhotoField.tsx'
+import PhotoField, { type PhotoView } from './PhotoField.tsx'
 import { usePhoto } from './usePhoto.ts'
 
 const MAX_PRICE_DIGITS = 9
+
+/** Высота описания по тексту, не больше 220 px. */
+function fitHeight(el: HTMLTextAreaElement) {
+  el.style.height = 'auto'
+  el.style.height = `${Math.min(el.scrollHeight + 3, 220)}px`
+}
 
 /** «32990» → «32 990» (неразрывные пробелы). */
 function groupDigits(digits: string) {
@@ -31,14 +37,20 @@ type Props = {
   defaultListId: string | null
   /** открыта со страницы списка — подпись «Этот список» */
   fromListId: string | null
+  /** при редактировании id не используется (это имя нового файла фото) */
   onSubmit: (wish: NewWish) => Promise<void>
-  /** добавлено — форму закрыть, показать тост */
-  onAdded: (wish: NewWish) => void
+  /** сохранено — форму закрыть, показать тост */
+  onDone: (wish: NewWish) => void
   onClose: () => void
+  /** «Редактировать» (Mobile-Card-Edit): заголовок, кнопка «Сохранить», поля заполнены */
+  mode?: 'add' | 'edit'
+  initial?: WishFields
+  /** «+ Указать цену» — курсор сразу в цене */
+  focusPrice?: boolean
 }
 
 /**
- * Форма «Новое желание» — Mobile-Add (+ -Empty, -Home, -FromList, -NameError, -Keyboard, -Discard,
+ * Форма «Новое желание» / «Редактировать» — Mobile-Add, Mobile-Card-Edit, Mobile-Card-Edit-Discard (+ -Empty, -Home, -FromList, -NameError, -Keyboard, -Discard,
  * фото: -Uploading, -PhotoError, -PhotoTooBig, -PhotoSmall) и Desktop-Add (+ -Drag).
  * Блока «Подробнее» нет: приоритет и список видны всегда, список уже выбран (D-073, D-088).
  */
@@ -49,17 +61,29 @@ export default function WishForm({
   defaultListId,
   fromListId,
   onSubmit,
-  onAdded,
+  onDone,
   onClose,
+  mode = 'add',
+  initial,
+  focusPrice = false,
 }: Props) {
   const isDesktop = useIsDesktop()
+  const edit = mode === 'edit'
+  // при добавлении — id желания (под ним фото), при редактировании — имя нового файла фото
   const [wishId] = useState(() => crypto.randomUUID())
-  const [title, setTitle] = useState('')
-  const [priceDigits, setPriceDigits] = useState('')
-  const [url, setUrl] = useState('')
+  const start = {
+    title: initial?.title ?? '',
+    priceDigits: initial?.price != null ? String(initial.price) : '',
+    url: initial?.sourceUrl ?? '',
+    description: initial?.description ?? '',
+    priority: initial?.priority ?? 3,
+  }
+  const [title, setTitle] = useState(start.title)
+  const [priceDigits, setPriceDigits] = useState(start.priceDigits)
+  const [url, setUrl] = useState(start.url)
   const [urlFocused, setUrlFocused] = useState(false)
-  const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState(3)
+  const [description, setDescription] = useState(start.description)
+  const [priority, setPriority] = useState(start.priority)
   const [listId, setListId] = useState(initialListId)
   const [nameError, setNameError] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -68,15 +92,37 @@ export default function WishForm({
   const [dragOver, setDragOver] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
   const priceRef = useRef<HTMLInputElement>(null)
-  const p = usePhoto(userId, wishId)
+  const descRef = useRef<HTMLTextAreaElement>(null)
+  const savedPath = initial?.imagePath ?? null
+  const p = usePhoto(userId, wishId, savedPath)
+  const savedUrls = usePhotoUrls([p.saved])
 
-  const dirty =
-    !!p.photo ||
-    !!title.trim() ||
-    !!priceDigits ||
-    !!url.trim() ||
-    !!description.trim() ||
-    priority !== 3
+  const photoView: PhotoView | null = p.photo
+    ? {
+        previewUrl: p.photo.previewUrl,
+        upload: p.photo.upload,
+        progress: p.photo.progress,
+        small: p.photo.original.small,
+      }
+    : p.saved
+      ? { previewUrl: savedUrls[p.saved], upload: 'done', progress: 100, small: false }
+      : null
+
+  const dirty = edit
+    ? !!p.photo ||
+      p.saved !== savedPath ||
+      title.trim() !== start.title.trim() ||
+      priceDigits !== start.priceDigits ||
+      url.trim() !== start.url.trim() ||
+      description.trim() !== start.description.trim() ||
+      priority !== start.priority ||
+      listId !== initialListId
+    : !!p.photo ||
+      !!title.trim() ||
+      !!priceDigits ||
+      !!url.trim() ||
+      !!description.trim() ||
+      priority !== 3
   const uploading = p.photo?.upload === 'uploading'
   const blocked = saving || !p.ready
   const urlIsText = url.trim() !== '' && extractUrl(url) === null
@@ -106,12 +152,12 @@ export default function WishForm({
       sourceUrl: extractUrl(url),
       description: description.trim() || null,
       priority,
-      imagePath: photo?.path ?? null,
+      imagePath: p.finalPath,
     }
     try {
       await onSubmit(wish)
     } catch (e) {
-      console.warn('Не удалось добавить желание:', e)
+      console.warn(edit ? 'Не удалось сохранить желание:' : 'Не удалось добавить желание:', e)
       setSaving(false)
       setSaveError(true)
       return
@@ -121,13 +167,21 @@ export default function WishForm({
       p.keep()
       rememberLocalPhoto(photo.path, photo.blob)
     }
-    onAdded(wish)
+    // старое фото заменили или убрали — файл больше ни на что не ссылается
+    if (savedPath && savedPath !== wish.imagePath) removePhoto(savedPath)
+    onDone(wish)
   }
 
-  // Компьютер: курсор сразу в названии
+  // Редактирование: описание сразу видно целиком (до 220 px)
+  useLayoutEffect(() => {
+    if (descRef.current && descRef.current.value) fitHeight(descRef.current)
+  }, [])
+
+  // Компьютер: курсор сразу в названии (при «+ Указать цену» — в цене, и на телефоне тоже)
   useEffect(() => {
-    if (isDesktop) titleRef.current?.focus()
-  }, [isDesktop])
+    if (focusPrice) priceRef.current?.focus()
+    else if (isDesktop && !edit) titleRef.current?.focus()
+  }, [isDesktop, edit, focusPrice])
 
   // Вставка картинки из буфера (⌘V), пока форма открыта. Текст вставляется в поля как обычно.
   // Перетаскивание файла на окно — подсветка блока фото (Desktop-Add-Drag).
@@ -226,19 +280,27 @@ export default function WishForm({
           : 'bg-accent text-text hover:brightness-[0.97]'
       } ${blocked ? 'cursor-default' : 'cursor-pointer'}`}
     >
-      {saving ? 'Добавляем…' : uploading ? 'Загружаем фото…' : 'Добавить'}
+      {saving
+        ? edit
+          ? 'Сохраняем…'
+          : 'Добавляем…'
+        : uploading
+          ? 'Загружаем фото…'
+          : edit
+            ? 'Сохранить'
+            : 'Добавить'}
     </button>
   )
 
   const photoField = (
     <PhotoField
-      photo={p.photo}
+      photo={photoView}
       problem={p.problem}
       opening={p.opening}
       dragOver={dragOver}
       isDesktop={isDesktop}
       onFile={(f) => void p.pickFile(f)}
-      onRecrop={p.recrop}
+      onRecrop={() => void p.recrop()}
       onRemove={p.remove}
       onRetry={p.retry}
     />
@@ -332,11 +394,10 @@ export default function WishForm({
           maxLength={2000}
           placeholder="Размер, цвет, модель, пожелания"
           value={description}
+          ref={descRef}
           onChange={(e) => {
             setDescription(e.target.value)
-            const el = e.target
-            el.style.height = 'auto'
-            el.style.height = `${Math.min(el.scrollHeight + 3, 220)}px`
+            fitHeight(e.target)
           }}
           className="resize-none rounded-field border-[1.5px] border-border bg-surface px-3.5 py-3 text-base leading-[1.4] text-text outline-none placeholder:text-text-3 focus:border-text lg:text-[15px]"
         />
@@ -360,14 +421,16 @@ export default function WishForm({
 
   const saveErrorLine = saveError ? (
     <p role="alert" className="m-0 text-[13px] font-medium text-danger">
-      Не получилось добавить — проверьте интернет и попробуйте ещё раз
+      {edit
+        ? 'Не получилось сохранить — проверьте интернет и попробуйте ещё раз'
+        : 'Не получилось добавить — проверьте интернет и попробуйте ещё раз'}
     </p>
   ) : null
 
   return (
     <>
       <FormWindow
-        title="Новое желание"
+        title={edit ? 'Редактировать' : 'Новое желание'}
         onClose={requestClose}
         dirty={dirty}
         desktopTop={80}
@@ -428,8 +491,8 @@ export default function WishForm({
 
       {askDiscard ? (
         <Dialog
-          title="Не сохранять желание?"
-          body="Введённые данные пропадут."
+          title={edit ? 'Не сохранять изменения?' : 'Не сохранять желание?'}
+          body={edit ? 'Изменения в карточке пропадут.' : 'Введённые данные пропадут.'}
           primary="Не сохранять"
           secondary="Продолжить"
           onPrimary={onClose}

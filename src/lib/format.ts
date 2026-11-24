@@ -93,3 +93,15 @@ export function toIsoDate(date: Date): string {
 export function countSum(count: number, sum: number): string {
   return `${count} · ${formatRub(sum)}`
 }
+
+/** Дата добавления желания: «12 ноября», в другом году — «12 ноября 2025». */
+export function formatAddedDate(iso: string): string {
+  const d = new Date(iso)
+  const base = `${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`
+  return d.getFullYear() === new Date().getFullYear() ? base : `${base} ${d.getFullYear()}`
+}
+
+/** «7 желаний», «пусто» — в выборе списка для переноса. */
+export function wishCount(n: number): string {
+  return n === 0 ? 'пусто' : `${n} ${plural(n, ['желание', 'желания', 'желаний'])}`
+}

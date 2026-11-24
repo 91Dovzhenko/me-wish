@@ -134,7 +134,14 @@ export async function uploadPhoto(
   })
 }
 
-/** Удаление загруженного, но не сохранённого фото. Ошибки не мешают — это уборка. */
+/** Сохранённое фото — для повторной обрезки при редактировании. */
+export async function downloadPhoto(path: string): Promise<Blob> {
+  const { data, error } = await supabase!.storage.from(PHOTO_BUCKET).download(path)
+  if (error) throw error
+  return data
+}
+
+/** Удаление загруженного, но не сохранённого фото (или старого — после замены). Ошибки не мешают — это уборка. */
 export function removePhoto(path: string) {
   cache.delete(path)
   supabase?.storage

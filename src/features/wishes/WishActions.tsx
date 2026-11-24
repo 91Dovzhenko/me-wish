@@ -49,7 +49,7 @@ export function WishActionsProvider({ children }: { children: ReactNode }) {
         fromListId={fromListId}
         onClose={() => setForm(null)}
         onSubmit={data.addWish}
-        onAdded={(wish) => {
+        onDone={(wish) => {
           setForm(null)
           const list = lists.find((l) => l.id === wish.listId)
           toast({

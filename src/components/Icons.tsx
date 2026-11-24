@@ -122,3 +122,11 @@ export const GiftIcon = (p: IconProps) => (
     d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1s3 1 5 1zM12 7c1.5-3 5-3.5 5-1s-3 1-5 1z"
   />
 )
+export const ExternalIcon = (p: IconProps) => (
+  <Line
+    strokeWidth={2}
+    {...p}
+    d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"
+  />
+)
+export const ArrowRightIcon = (p: IconProps) => <Line {...p} d="M4 12h14M13 6l6 6-6 6" />

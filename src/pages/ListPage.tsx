@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import Button from '../components/Button.tsx'
 import {
   BackIcon,
@@ -19,22 +19,26 @@ import {
   useDismiss,
 } from '../components/Menu.tsx'
 import { SkeletonBlock } from '../components/Skeleton.tsx'
-import { useAppData, type ListSummary } from '../data/AppData.tsx'
+import { isDone, useAppData, type ListSummary, type WishItem } from '../data/AppData.tsx'
 import WishCard from '../components/WishCard.tsx'
 import { useListActions } from '../features/lists/ListActions.tsx'
+import { SORT_OPTIONS, sortItems, useListSort, type SortKey } from '../features/wishes/sort.ts'
 import { useWishActions } from '../features/wishes/WishActions.tsx'
-import { useListWishes, type ListWish } from '../features/wishes/useListWishes.ts'
-import { countSum } from '../lib/format.ts'
+import WishSheet from '../features/wishes/WishSheet.tsx'
+import { countSum, formatRub } from '../lib/format.ts'
 import { usePhotoUrls } from '../lib/photos.ts'
 import NotFoundPage from './NotFoundPage.tsx'
 
 // Экран списка: Mobile-List / Mobile-List-Compact / Mobile-List-Empty / Mobile-List-Loading,
 // Desktop-List / Desktop-List-Empty / Desktop-List-Loading. Меню «•••» — Mobile-List-Menu(-Last), Desktop-List-Menu.
-// Сетка карточек — WishCard / Spec-Cards (только просмотр). Открытие карточки, сортировка, «Исполненные» — 003-d.
+// Сетка карточек — WishCard / Spec-Cards; сортировка — Mobile-List-Sort / Desktop-List-Sort;
+// «Исполнено» — Mobile-List-DoneGroup / Mobile-List-AllDone. Открытая карточка — /l/<список>/w/<item> (WishSheet).
 
 export default function ListPage() {
-  const { listId } = useParams()
+  const { listId, '*': rest } = useParams()
   const data = useAppData()
+  // /l/<id> — список, /l/<id>/w/<item> — список и поверх него карточка; другое — «не найдено»
+  const itemMatch = rest ? /^w\/([^/]+)\/?$/.exec(rest) : null
 
   if (data.status === 'error') {
     return (
@@ -50,6 +54,7 @@ export default function ListPage() {
     )
   }
 
+  if (rest && !itemMatch) return <NotFoundPage />
   if (data.status === 'loading') return <ListLoading />
 
   const list = data.lists.find((l) => l.id === listId)
@@ -60,25 +65,72 @@ export default function ListPage() {
     <ListView
       key={list.id}
       list={list}
+      allItems={data.items}
       isLast={data.lists.length <= 1}
-      wishesVersion={data.wishesVersion}
+      itemId={itemMatch?.[1] ?? null}
     />
   )
 }
 
 function ListView({
   list,
+  allItems,
   isLast,
-  wishesVersion,
+  itemId,
 }: {
   list: ListSummary
+  allItems: WishItem[]
   isLast: boolean
-  wishesVersion: number
+  itemId: string | null
 }) {
-  const hasItems = list.itemCount > 0
+  const { sync } = useAppData()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { openAdd } = useWishActions()
   const add = () => openAdd({ listId: list.id })
-  const wishes = useListWishes(list.id, hasItems, wishesVersion)
+  const [sort, setSort] = useListSort(list.id)
+  const [showDone, setShowDone] = useState(true)
+
+  // Вход в список — тихо перечитываем всё сразу (карточки, сводки, счётчики — одним снимком)
+  useEffect(() => {
+    sync()
+  }, [list.id, sync])
+
+  const items = allItems.filter((it) => it.listId === list.id)
+  const hasItems = items.length > 0
+  const active = sortItems(
+    items.filter((it) => !isDone(it.status)),
+    sort,
+  )
+  const done = sortItems(
+    items.filter((it) => isDone(it.status)),
+    sort,
+  )
+
+  // ─── Открытая карточка ───
+  const cardItem = itemId ? allItems.find((it) => it.itemId === itemId) : undefined
+  // карточку, которую уже показывали в этом списке, не меняем на «не найдено», если её перенесли или удалили
+  const [seenId, setSeenId] = useState<string | null>(null)
+  if (cardItem && cardItem.listId === list.id && seenId !== itemId) setSeenId(itemId)
+  const closing = useRef(false)
+  useEffect(() => {
+    closing.current = false
+  }, [itemId])
+  const closeCard = () => {
+    if (closing.current) return
+    closing.current = true
+    // открыли из сетки — назад по истории (как кнопка «Назад»); по прямой ссылке — на адрес списка
+    if ((location.state as { fromList?: boolean } | null)?.fromList) navigate(-1)
+    else navigate(`/l/${list.id}`, { replace: true })
+  }
+  const vanished = !!itemId && !cardItem && seenId === itemId
+  useEffect(() => {
+    // желание удалили на другом устройстве, пока карточка была открыта, — просто закрываем
+    if (vanished && !closing.current) navigate(`/l/${list.id}`, { replace: true })
+  }, [vanished, list.id, navigate])
+  const cardNotFound =
+    !!itemId && !vanished && (!cardItem || (cardItem.listId !== list.id && seenId !== itemId))
+  if (cardNotFound) return <NotFoundPage />
 
   return (
     <>
@@ -124,8 +176,28 @@ function ListView({
 
         {hasItems ? (
           <>
-            <ListChips />
-            <WishGrid state={wishes.state} onRetry={wishes.retry} />
+            <ListChips
+              sort={sort}
+              onSort={setSort}
+              showDone={showDone}
+              onToggleDone={() => setShowDone((v) => !v)}
+            />
+            {active.length > 0 ? (
+              <WishGrid items={active} listId={list.id} label="Желания" />
+            ) : (
+              <AllDoneNote />
+            )}
+            {showDone && done.length > 0 ? (
+              <section aria-labelledby="done-title" className="flex flex-col gap-3 lg:gap-[18px]">
+                <h2
+                  id="done-title"
+                  className="m-0 mx-1 mt-2 text-[17px] font-bold lg:mx-0 lg:mt-2.5 lg:text-lg"
+                >
+                  Исполнено <span className="font-medium text-text-2">· {done.length}</span>
+                </h2>
+                <WishGrid items={done} listId={list.id} label="Исполнено" />
+              </section>
+            ) : null}
           </>
         ) : (
           <EmptyState list={list} onAdd={add} />
@@ -133,7 +205,26 @@ function ListView({
       </main>
 
       <AddFab onClick={add} />
+
+      {cardItem && !vanished ? <WishSheet item={cardItem} list={list} onClose={closeCard} /> : null}
     </>
+  )
+}
+
+/** Исполнено всё — Mobile-List-AllDone. */
+function AllDoneNote() {
+  return (
+    <div className="flex items-center gap-3 rounded-[20px] bg-done-bg p-4">
+      <span className="flex size-10 flex-none items-center justify-center rounded-full bg-accent">
+        <CheckIcon size={20} strokeWidth={2.6} />
+      </span>
+      <span className="flex flex-col gap-0.5">
+        <span className="text-[15px] font-bold">Всё исполнено</span>
+        <span className="text-[13px] text-done-text">
+          Добавьте новое желание или загляните в другие списки
+        </span>
+      </span>
+    </div>
   )
 }
 
@@ -182,32 +273,90 @@ function ListSummaryLine({ list }: { list: ListSummary }) {
   )
 }
 
-/** Чипы «По приоритету» и «Исполненные» — видны, работа появится в 003-d. */
-function ListChips() {
+/** Чипы: сортировка (Mobile-List-Sort / Desktop-List-Sort) и переключатель «Исполненные». */
+function ListChips({
+  sort,
+  onSort,
+  showDone,
+  onToggleDone,
+}: {
+  sort: SortKey
+  onSort: (k: SortKey) => void
+  showDone: boolean
+  onToggleDone: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  useDismiss(rootRef, open, () => setOpen(false))
+  const current = SORT_OPTIONS.find((o) => o.key === sort) ?? SORT_OPTIONS[0]!
   return (
     <div className="flex items-center justify-between gap-2 lg:justify-start lg:gap-2.5">
-      <button
-        type="button"
-        aria-disabled="true"
-        title="Скоро"
-        className="inline-flex h-10 cursor-default items-center gap-1.5 rounded-full bg-surface px-3.5 text-sm font-semibold whitespace-nowrap"
-      >
-        <SortIcon size={15} />
-        По приоритету
-      </button>
+      <div ref={rootRef} className="relative">
+        <button
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label={`Сортировка: ${current.label}`}
+          onClick={() => setOpen((v) => !v)}
+          className={`relative z-[21] inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold whitespace-nowrap ${
+            open ? 'bg-accent-2-soft' : 'bg-surface hover:bg-[#fafaf7]'
+          }`}
+        >
+          <SortIcon size={15} />
+          {current.label}
+        </button>
+        {open ? (
+          <>
+            {/* телефон: лёгкое затемнение, нажатие по нему закрывает */}
+            <div
+              aria-hidden="true"
+              onClick={() => setOpen(false)}
+              className="fade-in fixed inset-0 z-20 cursor-pointer bg-[rgba(23,24,28,0.12)] lg:hidden"
+            />
+            <div
+              role="listbox"
+              aria-label="Сортировка"
+              className="pop-in absolute top-12 left-0 z-30 flex w-[250px] flex-col rounded-[20px] bg-surface p-1.5 shadow-[0_16px_40px_rgba(23,24,28,0.18)] lg:rounded-[18px] lg:shadow-[0_16px_40px_rgba(23,24,28,0.18),0_0_0_1px_var(--divider)]"
+            >
+              {SORT_OPTIONS.map((o) => {
+                const on = o.key === sort
+                return (
+                  <button
+                    key={o.key}
+                    type="button"
+                    role="option"
+                    aria-selected={on}
+                    onClick={() => {
+                      onSort(o.key)
+                      setOpen(false)
+                    }}
+                    className={`flex h-[46px] cursor-pointer items-center justify-between rounded-[14px] px-3 text-left text-[15px] whitespace-nowrap lg:h-11 lg:rounded-item lg:text-sm ${
+                      on ? 'bg-bg font-semibold' : 'font-normal hover:bg-bg'
+                    }`}
+                  >
+                    {o.label}
+                    {on ? <CheckIcon size={16} strokeWidth={2.4} /> : null}
+                  </button>
+                )
+              })}
+            </div>
+          </>
+        ) : null}
+      </div>
       <button
         type="button"
         role="switch"
-        aria-checked="true"
-        aria-disabled="true"
-        title="Скоро"
-        className="inline-flex h-10 cursor-default items-center gap-2 rounded-full bg-surface pr-3.5 pl-2 text-sm font-semibold whitespace-nowrap"
+        aria-checked={showDone}
+        onClick={onToggleDone}
+        className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-surface pr-3.5 pl-2 text-sm font-semibold whitespace-nowrap hover:bg-[#fafaf7]"
       >
         <span
           aria-hidden="true"
-          className="inline-flex size-[22px] items-center justify-center rounded-full bg-accent"
+          className={`inline-flex size-[22px] items-center justify-center rounded-full ${
+            showDone ? 'bg-accent' : 'bg-bg shadow-[inset_0_0_0_1.5px_var(--border)]'
+          }`}
         >
-          <CheckIcon size={12} strokeWidth={3} />
+          {showDone ? <CheckIcon size={12} strokeWidth={3} /> : null}
         </span>
         Исполненные
       </button>
@@ -247,42 +396,28 @@ const GRID =
 
 /**
  * Сетка карточек: телефон — 2 колонки, компьютер — 4–5 (Mobile-List / Desktop-List).
- * Порядок — по приоритету, при равном — новые первыми (D-057). Все карточки ряда одной высоты (D-096).
+ * Все карточки ряда одной высоты (D-096). Нажатие открывает карточку поверх списка.
  */
-function WishGrid({
-  state,
-  onRetry,
-}: {
-  state: ReturnType<typeof useListWishes>['state']
-  onRetry: () => void
-}) {
-  const items = state.status === 'ready' ? state.items : []
+function WishGrid({ items, listId, label }: { items: WishItem[]; listId: string; label: string }) {
   const urls = usePhotoUrls(items.map((w) => w.imagePath))
-
-  if (state.status === 'loading') return <GridSkeleton />
-  if (state.status === 'error') {
-    return (
-      <div className="flex flex-col items-start gap-3 px-1 lg:px-0">
-        <p role="alert" className="m-0 text-sm font-medium text-danger">
-          Не получилось загрузить желания. Проверьте интернет.
-        </p>
-        <Button variant="dark" onClick={onRetry}>
-          Попробовать ещё раз
-        </Button>
-      </div>
-    )
-  }
   return (
-    <ul aria-label="Желания" className={`m-0 list-none p-0 ${GRID}`}>
-      {items.map((w: ListWish) => (
+    <ul aria-label={label} className={`m-0 list-none p-0 ${GRID}`}>
+      {items.map((w) => (
         <li key={w.itemId} className="min-w-0">
-          <WishCard
-            title={w.title}
-            price={w.price}
-            photoUrl={w.imagePath ? urls[w.imagePath] : null}
-            priority={w.priority}
-            status={w.status}
-          />
+          <Link
+            to={`/l/${listId}/w/${w.itemId}`}
+            state={{ fromList: true }}
+            aria-label={`${w.title}, ${w.price != null ? formatRub(w.price) : 'без цены'}`}
+            className="block h-full rounded-[20px] text-text no-underline transition-transform active:scale-[0.98]"
+          >
+            <WishCard
+              title={w.title}
+              price={w.price}
+              photoUrl={w.imagePath ? urls[w.imagePath] : null}
+              priority={w.priority}
+              status={w.status}
+            />
+          </Link>
         </li>
       ))}
     </ul>

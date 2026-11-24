@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -19,6 +20,30 @@ export type Profile = {
 }
 
 export type CoverMode = 'collage' | 'icon'
+
+export type WishStatus = 'active' | 'booked' | 'purchased' | 'gifted'
+
+/** Исполнено: «Куплено» или «Подарили». */
+// eslint-disable-next-line react-refresh/only-export-components
+export function isDone(status: WishStatus) {
+  return status === 'purchased' || status === 'gifted'
+}
+
+/** Желание в списке (появление list_items + поля желания). Корзина сюда не попадает. */
+export type WishItem = {
+  itemId: string
+  listId: string
+  wishId: string
+  title: string
+  price: number | null
+  imagePath: string | null
+  sourceUrl: string | null
+  description: string | null
+  status: WishStatus
+  completedAt: string | null
+  priority: number
+  addedAt: string
+}
 
 export type ListSummary = {
   id: string
@@ -57,10 +82,8 @@ export type Dashboard = {
   doneSum: number
 }
 
-/** Новое желание из формы (D-088). */
-export type NewWish = {
-  /** id задаёт клиент: под ним заранее загружено фото */
-  id: string
+/** Поля формы желания — при добавлении и редактировании (D-088). */
+export type WishFields = {
   listId: string
   title: string
   price: number | null
@@ -70,24 +93,54 @@ export type NewWish = {
   imagePath: string | null
 }
 
-type State =
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'ready'; profile: Profile; lists: ListSummary[]; dashboard: Dashboard }
+/** Новое желание из формы. id задаёт клиент: под ним заранее загружено фото. */
+export type NewWish = WishFields & { id: string }
 
-type AppDataValue = State & {
+/** Состояние связи Realtime — для строки в профиле. */
+export type LiveStatus = 'connecting' | 'live' | 'offline'
+
+type ListMeta = Omit<
+  ListSummary,
+  'itemCount' | 'totalPrice' | 'activeCount' | 'doneCount' | 'doneSum' | 'coverPhotos'
+>
+
+/** Снимок данных пользователя: всё, что на экране, считается из него (сводки не расходятся с сеткой). */
+type Snapshot = { profile: Profile; lists: ListMeta[]; items: WishItem[] }
+
+type State = { status: 'loading' } | { status: 'error' } | ({ status: 'ready' } & Snapshot)
+
+type Ready = {
+  status: 'ready'
+  profile: Profile
+  lists: ListSummary[]
+  dashboard: Dashboard
+  /** все желания всех списков пользователя (не в корзине) */
+  items: WishItem[]
+}
+
+type AppDataValue = ({ status: 'loading' } | { status: 'error' } | Ready) & {
   /** перезагрузка со скелетонами (после ошибки) */
   reload: () => void
   /** тихое обновление после изменений — без скелетонов */
   refresh: () => Promise<void>
+  /** тихо перечитать всё (несколько вызовов подряд — одно обновление) */
+  sync: () => void
+  liveStatus: LiveStatus
   createList: (fields: ListFields) => Promise<string>
   updateList: (id: string, fields: ListFields) => Promise<void>
   /** мягкое удаление; желания уходят в корзину (D-082). Бросает LastListError, если список последний. */
   deleteList: (id: string) => Promise<void>
   /** желание + появление в списке одной транзакцией (add_wish) */
   addWish: (wish: NewWish) => Promise<void>
-  /** растёт после каждого добавления — экран списка перечитывает карточки */
-  wishesVersion: number
+  /** поля желания, приоритет и список — одной транзакцией (update_wish) */
+  updateWish: (itemId: string, fields: WishFields) => Promise<void>
+  setPriority: (itemId: string, priority: number) => Promise<void>
+  setStatus: (itemId: string, status: WishStatus) => Promise<void>
+  moveItem: (itemId: string, listId: string) => Promise<void>
+  /** в корзину (D-080) */
+  trashItem: (itemId: string) => Promise<void>
+  /** «Отменить» после удаления */
+  restoreItem: (item: WishItem) => Promise<void>
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -108,85 +161,208 @@ function toRow(f: ListFields) {
   }
 }
 
+type ItemRow = {
+  id: string
+  list_id: string
+  priority: number
+  added_at: string
+  wish: {
+    id: string
+    title: string
+    price: number | null
+    image_path: string | null
+    source_url: string | null
+    description: string | null
+    status: WishStatus
+    completed_at: string | null
+  } | null
+}
+
 const AppDataContext = createContext<AppDataValue | null>(null)
 
-async function load(userId: string) {
+/** Профиль, списки и все желания — три запроса одновременно, результат применяется целиком. */
+async function load(userId: string): Promise<Snapshot> {
   const db = supabase!
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-  const [profileRes, listsRes, dashRes] = await Promise.all([
+  const [profileRes, listsRes, itemsRes] = await Promise.all([
     db
       .from('profiles')
       .select('id, display_name, avatar_url, default_list_id')
       .eq('id', userId)
       .single(),
+    // удалённые списки RLS не отдаёт
     db
-      .from('list_overview')
+      .from('lists')
+      .select('id, title, description, event_date, icon, color, cover_mode, created_at')
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true }),
+    db
+      .from('list_items')
       .select(
-        'id, title, description, event_date, icon, color, cover_mode, item_count, total_price, active_count, done_count, done_sum, cover_photos, created_at',
+        'id, list_id, priority, added_at, wish:wishes!inner(id, title, price, image_path, source_url, description, status, completed_at)',
       )
-      .order('created_at', { ascending: true }),
-    db.rpc('dashboard_summary', { p_tz: tz }).single(),
+      .is('deleted_at', null)
+      .order('added_at', { ascending: false })
+      .order('id', { ascending: true }),
   ])
   if (profileRes.error) throw profileRes.error
   if (listsRes.error) throw listsRes.error
-  if (dashRes.error) throw dashRes.error
+  if (itemsRes.error) throw itemsRes.error
 
   const p = profileRes.data
-  const d = dashRes.data as {
-    active_count: number
-    active_sum: number
-    done_year: number
-    done_count: number
-    done_sum: number
-  }
+  const lists = listsRes.data.map((l): ListMeta => ({
+    id: l.id,
+    title: l.title,
+    description: l.description,
+    eventDate: l.event_date,
+    icon: asListIcon(l.icon),
+    color: asListColor(l.color),
+    coverMode: l.cover_mode === 'icon' ? 'icon' : 'collage',
+  }))
+  const alive = new Set(lists.map((l) => l.id))
+  const items = ((itemsRes.data ?? []) as unknown as ItemRow[])
+    .filter((r) => r.wish && alive.has(r.list_id))
+    .map((r): WishItem => ({
+      itemId: r.id,
+      listId: r.list_id,
+      wishId: r.wish!.id,
+      title: r.wish!.title,
+      price: r.wish!.price,
+      imagePath: r.wish!.image_path,
+      sourceUrl: r.wish!.source_url,
+      description: r.wish!.description,
+      status: r.wish!.status,
+      completedAt: r.wish!.completed_at,
+      priority: r.priority,
+      addedAt: r.added_at,
+    }))
   return {
     profile: {
       id: p.id,
       displayName: p.display_name,
       avatarUrl: p.avatar_url,
       defaultListId: p.default_list_id,
-    } satisfies Profile,
-    lists: listsRes.data.map((l): ListSummary => ({
-      id: l.id,
-      title: l.title,
-      description: l.description,
-      eventDate: l.event_date,
-      icon: asListIcon(l.icon),
-      color: asListColor(l.color),
-      coverMode: l.cover_mode === 'icon' ? 'icon' : 'collage',
-      itemCount: Number(l.item_count ?? 0),
-      totalPrice: Number(l.total_price ?? 0),
-      activeCount: Number(l.active_count ?? 0),
-      doneCount: Number(l.done_count ?? 0),
-      doneSum: Number(l.done_sum ?? 0),
-      coverPhotos: Array.isArray(l.cover_photos) ? (l.cover_photos as string[]) : [],
-    })),
-    dashboard: {
-      activeCount: Number(d.active_count),
-      activeSum: Number(d.active_sum),
-      doneYear: Number(d.done_year),
-      doneCount: Number(d.done_count),
-      doneSum: Number(d.done_sum),
-    } satisfies Dashboard,
+    },
+    lists,
+    items,
   }
 }
 
-/** Данные вошедшего пользователя для боковой панели, шапки и главной. */
+/** Новые первыми; при равной дате — по id (как в базе). */
+function byAddedDesc(a: WishItem, b: WishItem) {
+  if (a.addedAt !== b.addedAt) return a.addedAt < b.addedAt ? 1 : -1
+  return a.itemId < b.itemId ? -1 : a.itemId > b.itemId ? 1 : 0
+}
+
+/**
+ * Сводки считаются из того же снимка, что и сетка (раньше — отдельными запросами, и они расходились).
+ * Правила те же, что были в list_overview и dashboard_summary (DOMAIN §6):
+ * список — карточки не в корзине; «Активные» — не исполненные; главная — желание считается один раз,
+ * «Исполнено» — за текущий год по местному времени.
+ */
+function derive(s: Snapshot): Omit<Ready, 'status' | 'profile'> {
+  const byList = new Map<string, WishItem[]>()
+  for (const it of s.items) {
+    const arr = byList.get(it.listId)
+    if (arr) arr.push(it)
+    else byList.set(it.listId, [it])
+  }
+  const lists = s.lists.map((l): ListSummary => {
+    const items = byList.get(l.id) ?? []
+    let activeCount = 0
+    let totalPrice = 0
+    let doneCount = 0
+    let doneSum = 0
+    for (const it of items) {
+      if (isDone(it.status)) {
+        doneCount++
+        doneSum += it.price ?? 0
+      } else {
+        activeCount++
+        totalPrice += it.price ?? 0
+      }
+    }
+    const coverPhotos = items
+      .filter((it) => it.imagePath)
+      .sort(byAddedDesc)
+      .slice(0, 4)
+      .map((it) => it.imagePath!)
+    return {
+      ...l,
+      itemCount: items.length,
+      activeCount,
+      totalPrice,
+      doneCount,
+      doneSum,
+      coverPhotos,
+    }
+  })
+
+  const year = new Date().getFullYear()
+  const seen = new Set<string>()
+  const dashboard: Dashboard = {
+    activeCount: 0,
+    activeSum: 0,
+    doneYear: year,
+    doneCount: 0,
+    doneSum: 0,
+  }
+  for (const it of s.items) {
+    if (seen.has(it.wishId)) continue
+    seen.add(it.wishId)
+    if (!isDone(it.status)) {
+      dashboard.activeCount++
+      dashboard.activeSum += it.price ?? 0
+    } else if (it.completedAt && new Date(it.completedAt).getFullYear() === year) {
+      dashboard.doneCount++
+      dashboard.doneSum += it.price ?? 0
+    }
+  }
+  return { lists, dashboard, items: s.items }
+}
+
+/** Изменить одно желание в снимке. */
+function patchItem(itemId: string, patch: (it: WishItem) => WishItem) {
+  return (s: Snapshot): Snapshot => ({
+    ...s,
+    items: s.items.map((it) => (it.itemId === itemId ? patch(it) : it)),
+  })
+}
+
+/** Ошибка RPC/запроса → исключение; «0 строк изменено» (нет прав или уже удалено) — тоже ошибка. */
+function check({ error, data }: { error: unknown; data?: unknown[] | null }, expectRows = false) {
+  if (error) throw error
+  if (expectRows && (!data || data.length === 0))
+    throw new Error('Нет доступа или строка не найдена')
+}
+
+/** Данные вошедшего пользователя для боковой панели, шапки, главной и экрана списка. */
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const { session } = useAuth()
   const userId = session?.user.id
   const [state, setState] = useState<State>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
-  const [wishesVersion, setWishesVersion] = useState(0)
+  const [liveStatus, setLiveStatus] = useState<LiveStatus>('connecting')
+
+  // Ответы приходят не по порядку, а изменения применяются сразу (не дожидаясь сервера).
+  // Номер запроса растёт при каждой загрузке и в начале/конце каждого изменения: применяется только
+  // ответ, после запроса которого ничего не менялось, — старый ответ не затрёт свежее изменение.
+  const seq = useRef(0)
+  const mutating = useRef(0)
+  const lastSyncAt = useRef(0)
 
   useEffect(() => {
     if (!userId) return
     let alive = true
+    const my = ++seq.current
     load(userId)
-      .then((data) => alive && setState({ status: 'ready', ...data }))
+      .then((data) => {
+        if (!alive || my !== seq.current) return
+        lastSyncAt.current = Date.now()
+        setState({ status: 'ready', ...data })
+      })
       .catch((e) => {
         console.warn('Не удалось загрузить данные:', e)
-        if (alive) setState({ status: 'error' })
+        if (alive) setState((s) => (s.status === 'ready' ? s : { status: 'error' }))
       })
     return () => {
       alive = false
@@ -198,62 +374,104 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setAttempt((n) => n + 1)
   }, [])
 
-  // Ответы приходят не по порядку (несколько обновлений подряд) — применяем только последний
-  const loadSeq = useRef(0)
   const refresh = useCallback(async () => {
     if (!userId) return
-    const my = ++loadSeq.current
+    const my = ++seq.current
     const data = await load(userId)
-    if (my === loadSeq.current) setState({ status: 'ready', ...data })
+    if (my !== seq.current || mutating.current > 0) return
+    lastSyncAt.current = Date.now()
+    setState({ status: 'ready', ...data })
   }, [userId])
 
   // ─── Синхронизация между устройствами (D-105) ───
-  // Всё, что видно на экране (сводка, обложки, счётчики, меню, сетка открытого списка), обновляется
-  // одним «sync»: перечитываются общие данные и растёт wishesVersion — экран списка перечитывает карточки.
   const syncTimer = useRef<number | undefined>(undefined)
   const sync = useCallback(() => {
     window.clearTimeout(syncTimer.current)
     // пачку событий (желание + появление в списке) собираем в одно обновление
     syncTimer.current = window.setTimeout(() => {
-      setWishesVersion((n) => n + 1)
       refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
     }, 300)
   }, [refresh])
 
-  // 1) Supabase Realtime: изменения таблиц, которые пользователь может видеть (RLS проверяет сервер)
+  // 1) Supabase Realtime: изменения строк, которые пользователь может видеть (RLS проверяет сервер).
+  //    Канал пересоздаётся сам при ошибке, тайм-ауте или закрытии сервером (например, когда истёк токен
+  //    у «уснувшего» iPhone), а при возвращении в приложение — если он не на связи.
+  const reconnectRef = useRef<() => void>(() => {})
   useEffect(() => {
     const db = supabase
     if (!userId || !db) return
-    let wasSubscribed = false
-    const channel = db
-      .channel(`app-sync-${userId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'lists' }, sync)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'list_items' }, sync)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes' }, sync)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'list_members', filter: `user_id=eq.${userId}` },
-        sync,
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
-        sync,
-      )
-      .subscribe((status) => {
+    let disposed = false
+    let channel: ReturnType<typeof db.channel> | null = null
+    let retryTimer: number | undefined
+    let failures = 0
+    let everSubscribed = false
+    let n = 0
+
+    const connect = () => {
+      window.clearTimeout(retryTimer)
+      if (channel) void db.removeChannel(channel)
+      setLiveStatus('connecting')
+      const ch = db
+        .channel(`app-sync-${userId}-${++n}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'lists' }, sync)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'list_items' }, sync)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes' }, sync)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'list_members', filter: `user_id=eq.${userId}` },
+          sync,
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+          sync,
+        )
+      channel = ch
+      ch.subscribe((status, err) => {
+        if (disposed || channel !== ch) return
         if (status === 'SUBSCRIBED') {
-          // переподключились после обрыва — догоняем пропущенное
-          if (wasSubscribed) sync()
-          wasSubscribed = true
+          failures = 0
+          setLiveStatus('live')
+          // (пере)подключились — догоняем то, что могли пропустить
+          if (everSubscribed) sync()
+          everSubscribed = true
+        } else {
+          // CHANNEL_ERROR / TIMED_OUT / CLOSED — пересоздаём канал с паузой 1, 2, 4… до 30 с
+          if (err) console.warn('Realtime:', status, err)
+          setLiveStatus('offline')
+          window.clearTimeout(retryTimer)
+          retryTimer = window.setTimeout(connect, Math.min(30_000, 1000 * 2 ** failures++))
         }
       })
+    }
+
+    reconnectRef.current = () => {
+      if (disposed) return
+      const healthy = channel?.state === 'joined' && db.realtime.isConnected()
+      if (!healthy) {
+        failures = 0
+        connect()
+      }
+    }
+
+    connect()
     return () => {
+      disposed = true
+      window.clearTimeout(retryTimer)
       window.clearTimeout(syncTimer.current)
-      void db.removeChannel(channel)
+      if (channel) void db.removeChannel(channel)
+      reconnectRef.current = () => {}
     }
   }, [userId, sync])
 
-  // 2) Возвращение в приложение (из фона на iPhone, переключение вкладки на Mac) и появление сети
+  const liveRef = useRef(liveStatus)
+  useEffect(() => {
+    liveRef.current = liveStatus
+  }, [liveStatus])
+
+  // 2) Возвращение в приложение (из фона на iPhone, переключение вкладки на Mac) и появление сети:
+  //    перечитать всё и проверить канал. 3) Страховка: пока приложение на экране, раз в 30 с проверяем
+  //    канал; если он не на связи или данные не обновлялись 2 минуты — перечитываем.
   useEffect(() => {
     if (!userId) return
     let last = 0
@@ -262,19 +480,47 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       const now = Date.now()
       if (now - last < 2000) return
       last = now
+      reconnectRef.current()
       sync()
     }
+    const tick = window.setInterval(() => {
+      if (document.visibilityState !== 'visible' || !navigator.onLine) return
+      reconnectRef.current()
+      const stale = Date.now() - lastSyncAt.current > 120_000
+      if (stale || liveRef.current !== 'live') sync()
+    }, 30_000)
     document.addEventListener('visibilitychange', onBack)
     window.addEventListener('focus', onBack)
     window.addEventListener('online', onBack)
     window.addEventListener('pageshow', onBack)
     return () => {
+      window.clearInterval(tick)
       document.removeEventListener('visibilitychange', onBack)
       window.removeEventListener('focus', onBack)
       window.removeEventListener('online', onBack)
       window.removeEventListener('pageshow', onBack)
     }
   }, [userId, sync])
+
+  /**
+   * Изменение: сразу на экране (все сводки пересчитываются из того же снимка), затем запрос к базе,
+   * затем тихая сверка с базой. При ошибке сверка вернёт как было, а ошибка уходит вызывающему (тост).
+   */
+  const mutate = useCallback(
+    async (apply: (s: Snapshot) => Snapshot, run: () => Promise<void>) => {
+      mutating.current++
+      seq.current++
+      setState((s) => (s.status === 'ready' ? { status: 'ready', ...apply(s) } : s))
+      try {
+        await run()
+      } finally {
+        mutating.current--
+        seq.current++
+        refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
+      }
+    },
+    [refresh],
+  )
 
   const createList = useCallback(
     async (fields: ListFields) => {
@@ -321,24 +567,159 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         p_image_path: wish.imagePath,
       })
       if (error) throw error
-      setWishesVersion((n) => n + 1)
-      // сводки, счётчики и коллажи — тихо; ошибка обновления не отменяет добавление
-      refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
+      // карточка, сводки, счётчики и коллажи — одним обновлением; его ошибка не отменяет добавление
+      await refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
     },
     [refresh],
   )
 
+  const updateWish = useCallback(
+    (itemId: string, f: WishFields) =>
+      mutate(
+        patchItem(itemId, (it) => ({
+          ...it,
+          listId: f.listId,
+          title: f.title.trim(),
+          price: f.price,
+          sourceUrl: f.sourceUrl,
+          description: f.description?.trim() || null,
+          priority: f.priority,
+          imagePath: f.imagePath,
+        })),
+        async () => {
+          const { error } = await supabase!.rpc('update_wish', {
+            p_item_id: itemId,
+            p_list_id: f.listId,
+            p_title: f.title.trim(),
+            p_price: f.price,
+            p_source_url: f.sourceUrl,
+            p_description: f.description?.trim() || null,
+            p_priority: f.priority,
+            p_image_path: f.imagePath,
+          })
+          if (error) throw error
+        },
+      ),
+    [mutate],
+  )
+
+  const setPriority = useCallback(
+    (itemId: string, priority: number) =>
+      mutate(
+        patchItem(itemId, (it) => ({ ...it, priority })),
+        async () =>
+          check(
+            await supabase!.from('list_items').update({ priority }).eq('id', itemId).select('id'),
+            true,
+          ),
+      ),
+    [mutate],
+  )
+
+  const setStatus = useCallback(
+    (itemId: string, status: WishStatus) => {
+      const wishId =
+        state.status === 'ready' ? state.items.find((it) => it.itemId === itemId)?.wishId : null
+      if (!wishId) return Promise.reject(new Error('Желание не найдено'))
+      return mutate(
+        // completed_at ставит и сбрасывает база; здесь — только чтобы сводка главной сразу была верной
+        (s) => ({
+          ...s,
+          items: s.items.map((it) =>
+            it.wishId !== wishId
+              ? it
+              : {
+                  ...it,
+                  status,
+                  completedAt: !isDone(status)
+                    ? null
+                    : isDone(it.status)
+                      ? it.completedAt
+                      : new Date().toISOString(),
+                },
+          ),
+        }),
+        async () =>
+          check(
+            await supabase!.from('wishes').update({ status }).eq('id', wishId).select('id'),
+            true,
+          ),
+      )
+    },
+    [mutate, state],
+  )
+
+  const moveItem = useCallback(
+    (itemId: string, listId: string) =>
+      mutate(
+        patchItem(itemId, (it) => ({ ...it, listId })),
+        async () =>
+          check(
+            await supabase!
+              .from('list_items')
+              .update({ list_id: listId })
+              .eq('id', itemId)
+              .select('id'),
+            true,
+          ),
+      ),
+    [mutate],
+  )
+
+  const trashItem = useCallback(
+    (itemId: string) =>
+      mutate(
+        (s) => ({ ...s, items: s.items.filter((it) => it.itemId !== itemId) }),
+        async () => {
+          const { error } = await supabase!.rpc('trash_list_item', { p_item_id: itemId })
+          if (error) throw error
+        },
+      ),
+    [mutate],
+  )
+
+  const restoreItem = useCallback(
+    (item: WishItem) =>
+      mutate(
+        (s) => ({
+          ...s,
+          items: s.items.some((it) => it.itemId === item.itemId) ? s.items : [...s.items, item],
+        }),
+        async () => {
+          const { error } = await supabase!.rpc('restore_list_item', { p_item_id: item.itemId })
+          if (error) throw error
+        },
+      ),
+    [mutate],
+  )
+
+  const derived = useMemo(() => (state.status === 'ready' ? derive(state) : null), [state])
+
+  const base =
+    state.status === 'ready' && derived
+      ? ({ status: 'ready', profile: state.profile, ...derived } satisfies Ready)
+      : state.status === 'ready'
+        ? ({ status: 'loading' } as const)
+        : state
+
   return (
     <AppDataContext.Provider
       value={{
-        ...state,
+        ...base,
         reload,
         refresh,
+        sync,
+        liveStatus,
         createList,
         updateList,
         deleteList,
         addWish,
-        wishesVersion,
+        updateWish,
+        setPriority,
+        setStatus,
+        moveItem,
+        trashItem,
+        restoreItem,
       }}
     >
       {children}

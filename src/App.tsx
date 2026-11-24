@@ -28,7 +28,7 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/l/:listId" element={<ListPage />} />
+          <Route path="/l/:listId/*" element={<ListPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           {import.meta.env.DEV ? <Route path="/dev/covers" element={<DevCoversPage />} /> : null}
           <Route path="*" element={<NotFoundPage />} />

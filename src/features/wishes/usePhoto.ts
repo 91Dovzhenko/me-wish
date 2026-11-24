@@ -8,7 +8,13 @@ import {
   type CropRect,
   type OpenedPhoto,
 } from '../../lib/image.ts'
-import { photoPath, removePhoto, UploadAbortedError, uploadPhoto } from '../../lib/photos.ts'
+import {
+  downloadPhoto,
+  photoPath,
+  removePhoto,
+  UploadAbortedError,
+  uploadPhoto,
+} from '../../lib/photos.ts'
 
 export type PhotoState = {
   /** исходник — для повторной обрезки */
@@ -25,12 +31,19 @@ export type PhotoState = {
 type Cropping = { original: OpenedPhoto; initial: CropRect | null; isNew: boolean }
 
 /**
- * Фото формы «Новое желание»: выбор → обрезка → сжатие → загрузка в Storage сразу, пока заполняется форма.
- * Путь — <user_id>/<wish_id>.webp|jpg; повторная обрезка и «Другое фото» перезаписывают его.
- * Если форму закрыли без сохранения — загруженный файл удаляется.
+ * Фото формы желания: выбор → обрезка → сжатие → загрузка в Storage сразу, пока заполняется форма.
+ * Путь — <user_id>/<fileId>.webp|jpg; повторная обрезка и «Другое фото» перезаписывают его.
+ * При добавлении fileId = id желания; при редактировании — новый id, чтобы не трогать сохранённое фото,
+ * пока изменения не сохранены (старый файл удаляет форма после сохранения).
+ * Если форму закрыли без сохранения — загруженный (новый) файл удаляется; сохранённое фото не трогается.
+ *
+ * savedPath — фото, которое уже есть у желания (редактирование). Его можно обрезать заново
+ * (из сохранённого квадрата 800×800), заменить или убрать.
  */
-export function usePhoto(userId: string, wishId: string) {
+export function usePhoto(userId: string, fileId: string, savedPath: string | null = null) {
   const [photo, setPhoto] = useState<PhotoState | null>(null)
+  /** сохранённое фото, пока его не заменили и не убрали */
+  const [saved, setSaved] = useState<string | null>(savedPath)
   const [problem, setProblem] = useState<string | null>(null)
   const [cropping, setCropping] = useState<Cropping | null>(null)
   const [opening, setOpening] = useState(false)
@@ -107,7 +120,8 @@ export function usePhoto(userId: string, wishId: string) {
         return
       }
       const prev = photoRef.current
-      const path = photoPath(userId, wishId, rendered.ext)
+      const path = photoPath(userId, fileId, rendered.ext)
+      setSaved(null)
       if (prev) {
         URL.revokeObjectURL(prev.previewUrl)
         if (c.isNew && prev.original !== c.original) URL.revokeObjectURL(prev.original.url)
@@ -127,7 +141,7 @@ export function usePhoto(userId: string, wishId: string) {
         progress: 0,
       })
     },
-    [cropping, userId, wishId, startUpload],
+    [cropping, userId, fileId, startUpload],
   )
 
   const cancelCrop = useCallback(() => {
@@ -138,21 +152,41 @@ export function usePhoto(userId: string, wishId: string) {
     })
   }, [])
 
-  /** «Обрезать» — снова обрезка исходника с прошлой рамкой. */
-  const recrop = useCallback(() => {
+  /** «Обрезать» — снова обрезка исходника с прошлой рамкой; у сохранённого фото — обрезка сохранённого квадрата. */
+  const recrop = useCallback(async () => {
     const p = photoRef.current
-    if (p) setCropping({ original: p.original, initial: p.crop, isNew: false })
-  }, [])
+    if (p) {
+      setCropping({ original: p.original, initial: p.crop, isNew: false })
+      return
+    }
+    if (!saved) return
+    setProblem(null)
+    setOpening(true)
+    try {
+      const blob = await downloadPhoto(saved)
+      const original = await openPhoto(new File([blob], 'photo', { type: blob.type }))
+      setCropping({ original, initial: null, isNew: true })
+    } catch (e) {
+      console.warn('Не удалось открыть фото:', e)
+      setProblem('Не получилось открыть фото — проверьте интернет')
+    } finally {
+      setOpening(false)
+    }
+  }, [saved])
 
   const retry = useCallback(() => {
     const p = photoRef.current
     if (p) startUpload(p)
   }, [startUpload])
 
-  /** «Удалить фото». */
+  /** «Удалить фото». Сохранённое фото удаляется из Storage только после сохранения формы. */
   const remove = useCallback(() => {
     const p = photoRef.current
-    if (!p) return
+    if (!p) {
+      setSaved(null)
+      setProblem(null)
+      return
+    }
     seq.current++
     abortRef.current?.abort()
     removePhoto(p.path)
@@ -195,6 +229,10 @@ export function usePhoto(userId: string, wishId: string) {
     retry,
     remove,
     keep,
+    /** сохранённое фото (редактирование), пока его не заменили и не убрали */
+    saved,
+    /** путь, который запишется в желание */
+    finalPath: photo?.path ?? saved,
     /** можно сохранять: фото нет или оно загружено */
     ready: !photo || photo.upload === 'done',
   }

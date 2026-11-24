@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 import { AlertIcon, CropIcon, ImageIcon, TrashIcon, WarnIcon } from '../../components/Icons.tsx'
-import type { PhotoState } from './usePhoto.ts'
 
 // Блок фото формы «Новое желание»: Mobile-Add (пусто / выбрано / загрузка / ошибки / маленькое),
 // Desktop-Add и Desktop-Add-Drag (перетаскивание).
@@ -9,8 +8,17 @@ import type { PhotoState } from './usePhoto.ts'
 // image/* — чтобы на телефоне были и галерея, и камера; .heic/.heif — чтобы HEIC был виден в окне выбора на компьютере.
 const ACCEPT = 'image/*,.heic,.heif'
 
+/** Что показать в блоке фото: новое (загружается) или уже сохранённое у желания. */
+export type PhotoView = {
+  /** undefined — ссылка на сохранённое фото ещё не получена */
+  previewUrl: string | undefined
+  upload: 'uploading' | 'done' | 'error'
+  progress: number
+  small: boolean
+}
+
 type Props = {
-  photo: PhotoState | null
+  photo: PhotoView | null
   problem: string | null
   opening: boolean
   dragOver: boolean
@@ -94,7 +102,7 @@ function MobilePhoto({
       {input}
       <div className="flex items-center gap-3.5">
         <div className="relative w-[120px] flex-none">
-          <Preview photo={photo} radius={18} />
+          <Preview photo={photo} radius={18} opening={opening} />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <ActionButton icon={<CropIcon size={18} />} onClick={onRecrop}>
@@ -162,7 +170,7 @@ function DesktopPhoto({
     <div className="flex w-[260px] flex-none flex-col gap-2">
       {input}
       <div className="relative">
-        <Preview photo={photo} radius={24} />
+        <Preview photo={photo} radius={24} opening={opening} />
         {dragOver ? (
           <div className="absolute inset-0 flex items-center justify-center rounded-[24px] border-2 border-heart bg-[rgba(238,233,255,0.88)] p-5 text-center text-base font-bold">
             Отпустите, чтобы заменить
@@ -191,17 +199,32 @@ function DesktopPhoto({
 }
 
 /** Превью выбранного фото; во время загрузки — проценты и полоска (Mobile-Add-Uploading). */
-function Preview({ photo, radius }: { photo: PhotoState; radius: number }) {
+function Preview({
+  photo,
+  radius,
+  opening,
+}: {
+  photo: PhotoView
+  radius: number
+  opening: boolean
+}) {
   return (
     <div
       className="relative aspect-square w-full overflow-hidden bg-bg"
       style={{ borderRadius: radius }}
     >
-      <img
-        src={photo.previewUrl}
-        alt="Выбранное фото"
-        className="absolute inset-0 size-full object-cover"
-      />
+      {photo.previewUrl ? (
+        <img
+          src={photo.previewUrl}
+          alt="Выбранное фото"
+          className="absolute inset-0 size-full object-cover"
+        />
+      ) : null}
+      {opening ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-white/72 text-sm font-bold">
+          Открываем фото…
+        </div>
+      ) : null}
       {photo.upload === 'uploading' ? (
         <div
           role="progressbar"
@@ -229,7 +252,7 @@ function PhotoNotes({
   problem,
   onRetry,
 }: {
-  photo: PhotoState
+  photo: PhotoView
   problem: string | null
   onRetry: () => void
 }) {
@@ -252,7 +275,7 @@ function PhotoNotes({
         </div>
       ) : null}
       {problem ? <ErrorLine text={problem} /> : null}
-      {photo.original.small ? (
+      {photo.small ? (
         <div
           role="status"
           className="flex items-center gap-2 rounded-item bg-[#fff6e5] px-3 py-2.5 text-[13px] font-medium text-[#8a5a00]"
