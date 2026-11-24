@@ -56,17 +56,19 @@
 - `extractUrl(text)`: берёт ссылку из поля — саму ссылку, ссылку без `https://` или ссылку внутри текста «Поделиться»; при уходе из поля показывает в нём очищенную ссылку. Нет ссылки — подсказка под полем, сохранение не блокируется, `source_url = null`.
 - Удаляются с любого сайта: `utm_*`, `pk_*`, `mtm_*`, `_ga*`, `_gl`, `gclid`, `gbraid`, `wbraid`, `dclid`, `fbclid`, `yclid`, `ysclid`, `msclkid`, `ttclid`, `twclid`, `igshid`, `mc_cid`, `mc_eid`, `_openstat`, `erid`, `admitad_uid`, `spm`.
 - Только у своих маркетплейсов (у обычного магазина короткий параметр может что-то значить):
-  - Яндекс Маркет: `cpc`, `sponsored`, `do-waremd5`, `nid`, `ultima`, `ogV`, `bnplSelectedPlan`, `uniqueId`, `srcrr`, `rs`, `lr`, `clid`, `cpa`, `pp`, `track`, `text`, `hid`, `from`;
+  - Яндекс Маркет: `cpc`, `sponsored`, `nid`, `ultima`, `ogV`, `bnplSelectedPlan`, `uniqueId`, `srcrr`, `rs`, `lr`, `clid`, `cpa`, `pp`, `track`, `text`, `hid`, `from`;
   - Ozon: `at`, `sh`, `asb`, `asb2`, `keywords`, `avtc`, `avte`, `avts`, `is_apparel_size_selected`, `miniapp`, `oos_search`, `from`, `from_sku`, `tab`;
   - Wildberries: `targetUrl`, `from`, `source`;
   - AliExpress: `scm`, `pvid`, `algo_pvid`, `algo_expid`, `ru_algo_pv_id`, `scenario`, `mixer_rcmd_bucket_id`, `pdp_*` (trigger_item_id, npi, ext_f, perf), `traffic_source`, `type_rcmd`, `gatewayAdapt`, `sourceType`, `aff_*`, `terminal_id`, `afSmartRedirect`, `dp`, `af`, `cv`, `cn`, `mall_affr`, `tt`, `sk`, `businessType`, `platform`, `search_id`, `browser_id`, `gps-id`, `srcSns`, `spreadType`, `bizType`, `social_params`, `tracelog`, `shareId`, `share_id`, `invitationCode`, `templateId`.
-- Остаются: `size` (WB), `sku_id` (AliExpress), `oid` и любые неизвестные параметры.
+- Остаются: `size` (WB), `sku_id` (AliExpress), `do-waremd5` (продавец на Маркете, D-103), `oid` и любые неизвестные параметры.
 
 ## Экран списка и обложки
 - Карточки — `useListWishes(listId)`: `list_items` + `wishes` одним запросом, порядок `priority desc, added_at desc`. После добавления `AppData.wishesVersion` растёт — экран списка перечитывает карточки, сводки обновляются тихо (`refresh()`).
 - `list_overview.cover_photos` — пути 4 последних добавленных неудалённых желаний с фото (новые первыми). Обложка показывает плитки сразу, фото появляются по мере получения ссылок (без «прыжка» с иконки).
 - Превью «Коллаж» в «Настройках списка» тоже из `cover_photos`.
-- Карточка на компьютере — с тонкой рамкой (`Spec-Cards`: «На компьютере карточка в сетке — отдельный блок с тонкой рамкой»).
+- Карточка — белая на сером фоне, без рамки и на телефоне, и на компьютере (`Desktop-List`, D-103).
 
-## Форма: клавиатура на телефоне
-`FormWindow` с `keyboardAware`: контейнер шторки повторяет `visualViewport` (на iOS клавиатура не уменьшает окно), поэтому кнопка внизу оказывается над клавиатурой; отступ под кнопкой при открытой клавиатуре — 12 px (как в `Mobile-Add-Keyboard`). Поле с фокусом прокручивается в видимую часть.
+## Шторка на телефоне (`FormWindow`)
+- **Клавиатура** (все шторки): контейнер повторяет `visualViewport` (на iOS клавиатура не уменьшает окно), кнопка внизу — над клавиатурой, отступ под ней 12 px (`Mobile-Add-Keyboard`).
+- **Активное поле над кнопкой** (003-c-fix): iOS сам прокручивает поле только до клавиатуры и не знает о нашей кнопке. Поэтому после фокуса (через 50/300/600 мс — клавиатура выезжает с анимацией), при каждом изменении `visualViewport` и при вводе (описание растёт) прокрутка шторки поправляется так, чтобы поле было выше кнопки с отступом 16 px.
+- **Свайп вниз** (D-104): тянуть можно за ручку (зона 24 px сверху) и шапку всегда; за содержимое — только если оно и всё под пальцем прокручено до верха (иначе обычная прокрутка). Шторка едет за пальцем, фон бледнеет. Отпустили дальше min(160 px, 25 % высоты) или быстрее 0,5 px/мс — закрывается; иначе возвращается. Проп `dirty`: при введённых данных шторка возвращается и вызывается `onClose` — форма спрашивает «Не сохранять…?». Касания — `touchstart` (passive) / `touchmove` (non-passive, `preventDefault` только во время свайпа).

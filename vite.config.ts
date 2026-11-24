@@ -16,7 +16,8 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'script-defer',
+      // регистрация — в src/lib/pwa.ts: новая версия применяется сама (см. docs/tech/sync.md)
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'me:wish',

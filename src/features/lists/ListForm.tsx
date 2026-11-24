@@ -123,6 +123,7 @@ export default function ListForm({ list, isLast, onSubmit, onDelete, onClose }: 
       <FormWindow
         title={isEdit ? 'Настройки списка' : 'Новый список'}
         onClose={requestClose}
+        dirty={dirty}
         desktopTop={isEdit ? 40 : 60}
         footer={
           isDesktop ? (

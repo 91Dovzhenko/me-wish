@@ -15,7 +15,7 @@ type Props = {
 /**
  * Карточка в сетке — WishCard.dc.html / Spec-Cards.
  * Квадрат фото → цена (или «Без цены») → название до 2 строк → сердечки; у «Очень хочу» и «Мечта» — лаймовая метка.
- * На компьютере — блок с тонкой рамкой. Нажатие пока ничего не делает (открытие — 003-d).
+ * Белая на сером фоне, без рамки (Desktop-List, D-103). Нажатие пока ничего не делает (открытие — 003-d).
  */
 export default function WishCard({ title, price, photoUrl, priority, status }: Props) {
   const isDone = status === 'purchased' || status === 'gifted'
@@ -23,7 +23,7 @@ export default function WishCard({ title, price, photoUrl, priority, status }: P
   return (
     <article
       aria-label={`${title}, ${price != null ? formatRub(price) : 'без цены'}, ${priorityLabel(priority)}`}
-      className="flex h-full min-w-0 flex-col gap-2 rounded-[20px] bg-surface px-1.5 pt-1.5 pb-2.5 lg:border lg:border-[#e6e5df] lg:px-2 lg:pt-2 lg:pb-3"
+      className="flex h-full min-w-0 flex-col gap-2 rounded-[20px] bg-surface px-1.5 pt-1.5 pb-2.5"
     >
       <div className="relative">
         <PhotoSquare url={photoUrl} alt={title} dim={isDone} radius={15} />

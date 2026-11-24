@@ -369,7 +369,7 @@ export default function WishForm({
       <FormWindow
         title="Новое желание"
         onClose={requestClose}
-        keyboardAware
+        dirty={dirty}
         desktopTop={80}
         desktopWidth={780}
         desktopFooterClassName="flex flex-wrap items-end justify-between gap-4 border-t border-divider pt-[18px]"
@@ -399,15 +399,6 @@ export default function WishForm({
           onSubmit={(e) => {
             e.preventDefault()
             void submit()
-          }}
-          // телефон: поле с фокусом не прячется под клавиатурой
-          onFocus={(e) => {
-            if (isDesktop) return
-            const el = e.target as HTMLElement
-            window.setTimeout(
-              () => el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }),
-              300,
-            )
           }}
           className={isDesktop ? 'flex flex-wrap items-start gap-7' : 'flex flex-col gap-3.5'}
         >

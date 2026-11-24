@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useAuth } from '../auth/AuthProvider.tsx'
 import { asListColor, asListIcon, type ListColor, type ListIconName } from '../lib/listStyle.ts'
 import { supabase } from '../lib/supabase.ts'
@@ -190,11 +198,83 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setAttempt((n) => n + 1)
   }, [])
 
+  // Ответы приходят не по порядку (несколько обновлений подряд) — применяем только последний
+  const loadSeq = useRef(0)
   const refresh = useCallback(async () => {
     if (!userId) return
+    const my = ++loadSeq.current
     const data = await load(userId)
-    setState({ status: 'ready', ...data })
+    if (my === loadSeq.current) setState({ status: 'ready', ...data })
   }, [userId])
+
+  // ─── Синхронизация между устройствами (D-105) ───
+  // Всё, что видно на экране (сводка, обложки, счётчики, меню, сетка открытого списка), обновляется
+  // одним «sync»: перечитываются общие данные и растёт wishesVersion — экран списка перечитывает карточки.
+  const syncTimer = useRef<number | undefined>(undefined)
+  const sync = useCallback(() => {
+    window.clearTimeout(syncTimer.current)
+    // пачку событий (желание + появление в списке) собираем в одно обновление
+    syncTimer.current = window.setTimeout(() => {
+      setWishesVersion((n) => n + 1)
+      refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
+    }, 300)
+  }, [refresh])
+
+  // 1) Supabase Realtime: изменения таблиц, которые пользователь может видеть (RLS проверяет сервер)
+  useEffect(() => {
+    const db = supabase
+    if (!userId || !db) return
+    let wasSubscribed = false
+    const channel = db
+      .channel(`app-sync-${userId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'lists' }, sync)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'list_items' }, sync)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes' }, sync)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'list_members', filter: `user_id=eq.${userId}` },
+        sync,
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+        sync,
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          // переподключились после обрыва — догоняем пропущенное
+          if (wasSubscribed) sync()
+          wasSubscribed = true
+        }
+      })
+    return () => {
+      window.clearTimeout(syncTimer.current)
+      void db.removeChannel(channel)
+    }
+  }, [userId, sync])
+
+  // 2) Возвращение в приложение (из фона на iPhone, переключение вкладки на Mac) и появление сети
+  useEffect(() => {
+    if (!userId) return
+    let last = 0
+    const onBack = () => {
+      if (document.visibilityState !== 'visible') return
+      const now = Date.now()
+      if (now - last < 2000) return
+      last = now
+      sync()
+    }
+    document.addEventListener('visibilitychange', onBack)
+    window.addEventListener('focus', onBack)
+    window.addEventListener('online', onBack)
+    window.addEventListener('pageshow', onBack)
+    return () => {
+      document.removeEventListener('visibilitychange', onBack)
+      window.removeEventListener('focus', onBack)
+      window.removeEventListener('online', onBack)
+      window.removeEventListener('pageshow', onBack)
+    }
+  }, [userId, sync])
 
   const createList = useCallback(
     async (fields: ListFields) => {
