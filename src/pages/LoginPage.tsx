@@ -6,13 +6,22 @@ import { AlertIcon, TelegramIcon } from '../components/Icons.tsx'
 import Logo from '../components/Logo.tsx'
 
 // Экран входа: Mobile-Login (+ -Loading, -Error) и Desktop-Login (D-094).
-// Telegram (003-f) — своя кнопка по макету, вход через переадресацию на oauth.telegram.org (auth/telegram.ts).
+// Telegram (003-f2) — своя кнопка по макету, вход через бота по одноразовому коду (auth/telegram.ts):
+// нажатие открывает бота, экран ждёт «Start» («Подтвердите вход в Telegram и вернитесь сюда»).
 
 const TITLE = 'Все желания — в одном месте'
 const LEAD = 'Скриншот, название, цена — и желание сохранено. Делитесь списками с близкими.'
 
 export default function LoginPage() {
-  const { status, lastMethod, signInWithGoogle, signInWithTelegram } = useAuth()
+  const {
+    status,
+    lastMethod,
+    signInWithGoogle,
+    prepareTelegram,
+    signInWithTelegram,
+    reopenTelegram,
+    cancelTelegram,
+  } = useAuth()
   const [starting, setStarting] = useState(false)
 
   // Вернулись со страницы Google кнопкой «Назад» (страница из кэша) — снова показать кнопки
@@ -21,6 +30,11 @@ export default function LoginPage() {
     window.addEventListener('pageshow', onShow)
     return () => window.removeEventListener('pageshow', onShow)
   }, [])
+
+  // запрос на вход создаётся заранее: на iPhone Telegram можно открыть только прямо по нажатию
+  useEffect(() => {
+    if (status === 'signedOut' || status === 'error') prepareTelegram()
+  }, [status, prepareTelegram])
 
   if (status === 'signedIn') return <Navigate to="/" replace />
 
@@ -34,10 +48,7 @@ export default function LoginPage() {
     setStarting(false)
   }
 
-  const startTelegram = () => {
-    setStarting(true)
-    signInWithTelegram()
-  }
+  const startTelegram = () => signInWithTelegram()
 
   const actions = (
     <LoginActions
@@ -46,6 +57,9 @@ export default function LoginPage() {
       onGoogle={start}
       onTelegram={startTelegram}
       onRetry={lastMethod === 'telegram' ? startTelegram : start}
+      waitingTelegram={status === 'telegramWaiting'}
+      onReopenTelegram={reopenTelegram}
+      onCancelTelegram={cancelTelegram}
     />
   )
 
@@ -139,13 +153,54 @@ function LoginActions({
   onGoogle,
   onTelegram,
   onRetry,
+  waitingTelegram,
+  onReopenTelegram,
+  onCancelTelegram,
 }: {
   loading: boolean
   error: boolean
   onGoogle: () => void
   onTelegram: () => void
   onRetry: () => void
+  waitingTelegram: boolean
+  onReopenTelegram: () => void
+  onCancelTelegram: () => void
 }) {
+  if (waitingTelegram) {
+    // по образцу Mobile-Login-Loading: карточка с индикатором + действия под ней
+    return (
+      <div className="flex flex-col gap-3">
+        <div
+          role="status"
+          className="flex min-h-[126px] flex-col items-center justify-center gap-3 rounded-[20px] bg-surface px-5 py-5 text-center"
+        >
+          <span
+            aria-hidden="true"
+            className="size-8 animate-spin rounded-full border-[3px] border-skeleton-line border-t-text"
+          />
+          <span className="text-base leading-[1.35] font-semibold">
+            Подтвердите вход в Telegram и вернитесь сюда
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onReopenTelegram}
+          className="flex h-14 cursor-pointer items-center justify-center gap-2.5 rounded-btn bg-text text-base font-semibold text-white transition-colors hover:bg-[#2a2b31]"
+        >
+          <TelegramIcon size={20} />
+          Открыть Telegram ещё раз
+        </button>
+        <button
+          type="button"
+          onClick={onCancelTelegram}
+          className="h-14 cursor-pointer rounded-btn border-[1.5px] border-border-strong bg-surface text-base font-semibold text-text transition-colors hover:bg-[#fafaf7]"
+        >
+          Отмена
+        </button>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div

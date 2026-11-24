@@ -29,7 +29,6 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
-          VITE_TELEGRAM_BOT_ID: ${{ vars.VITE_TELEGRAM_BOT_ID }}
           VITE_TELEGRAM_BOT_NAME: ${{ vars.VITE_TELEGRAM_BOT_NAME }}
       - uses: actions/upload-pages-artifact@v4
         with:

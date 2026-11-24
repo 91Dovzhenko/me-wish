@@ -1,104 +1,115 @@
-// Вход через Telegram (ТЗ 003-f) — без стандартного виджета: своя кнопка по макету и переадресация.
-// 1) Кнопка уводит на oauth.telegram.org/auth?bot_id=…&origin=…&return_to=… — подтверждение в Telegram.
-// 2) Telegram возвращает на return_to с #tgAuthResult=<base64 JSON с подписанными данными>.
-// 3) Edge Function telegram-auth проверяет подпись токеном бота и отдаёт одноразовый token_hash.
-// 4) verifyOtp меняет его на обычную сессию Supabase. Подробно — docs/tech/telegram-login.md.
+// Вход через Telegram-бота по одноразовому коду (ТЗ 003-f2, D-111). Работает одинаково в Safari,
+// в установленном приложении на iPhone и на Mac: результат приходит не переадресацией, а опросом сервера.
+// 1) createTelegramLogin(): Edge Function telegram-auth создаёт код и секрет устройства (в базе — только хэш).
+// 2) openTelegram(): открывается бот с /start login_<код>; пользователь жмёт «Start», вебхук подтверждает.
+// 3) pollTelegram(): приложение раз в 1,5 с (и при возвращении) спрашивает код + секрет; после
+//    подтверждения получает одноразовый token_hash → finishTelegram() меняет его на сессию Supabase.
+// Подробно — docs/tech/telegram-login.md.
 import type { Session } from '@supabase/supabase-js'
 import { supabase, supabaseUrl } from '../lib/supabase.ts'
 
-export type TelegramAuthData = {
-  id: number | string
-  first_name?: string
-  last_name?: string
-  username?: string
-  photo_url?: string
-  auth_date: number | string
-  hash: string
-}
+export const TELEGRAM_BOT_NAME = import.meta.env.VITE_TELEGRAM_BOT_NAME || 'me_wish_bot'
 
-const FIELDS = ['id', 'first_name', 'last_name', 'username', 'photo_url', 'auth_date', 'hash']
+export type TelegramLogin = { code: string; secret: string; expiresAt: number }
 
-export const TELEGRAM_BOT_ID = import.meta.env.VITE_TELEGRAM_BOT_ID ?? ''
+const STORE_KEY = 'me-wish:tg-login'
 
-/** Куда Telegram вернёт пользователя: корень приложения (там index.html, без перехода через 404.html). */
-function returnTo() {
-  return `${window.location.origin}${import.meta.env.BASE_URL}`
-}
-
-/** Уйти на подтверждение в Telegram. false — бот не настроен (нет VITE_TELEGRAM_BOT_ID). */
-export function startTelegramLogin(): boolean {
-  if (!/^[0-9]+$/.test(TELEGRAM_BOT_ID)) {
-    console.warn('Вход через Telegram: не задан VITE_TELEGRAM_BOT_ID')
-    return false
-  }
-  const url = new URL('https://oauth.telegram.org/auth')
-  url.searchParams.set('bot_id', TELEGRAM_BOT_ID)
-  url.searchParams.set('origin', window.location.origin)
-  url.searchParams.set('return_to', returnTo())
-  window.location.assign(url.toString())
-  return true
-}
-
-/** base64 / base64url → строка UTF-8 (имена бывают кириллицей). */
-function decodeBase64(s: string): string {
-  const b64 = s.replace(/-/g, '+').replace(/_/g, '/')
-  const bin = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4))
-  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)))
-}
-
-function pickFields(src: Record<string, unknown>): TelegramAuthData | null {
-  const out: Record<string, string | number> = {}
-  for (const k of FIELDS) {
-    const v = src[k]
-    if (v !== undefined && v !== null && v !== '') out[k] = v as string | number
-  }
-  return out.id && out.auth_date && out.hash ? (out as unknown as TelegramAuthData) : null
-}
-
-/**
- * Разбор адреса после возврата из Telegram (один раз при загрузке, до роутера); служебное убирается из строки.
- * null — это не возврат из Telegram; 'refused' — отказ или испорченный ответ.
- */
-export function readTelegramCallback(): TelegramAuthData | 'refused' | null {
-  const url = new URL(window.location.href)
-  const hash = new URLSearchParams(url.hash.replace(/^#/, ''))
-  const result = hash.get('tgAuthResult')
-
-  if (result !== null) {
-    window.history.replaceState(window.history.state, '', url.pathname + url.search)
-    try {
-      const parsed: unknown = JSON.parse(decodeBase64(result))
-      if (!parsed || typeof parsed !== 'object') return 'refused'
-      return pickFields(parsed as Record<string, unknown>) ?? 'refused'
-    } catch {
-      return 'refused'
-    }
-  }
-
-  // Другой вариант ответа Telegram — поля в параметрах адреса (?id=…&hash=…)
-  if (url.searchParams.has('hash') && url.searchParams.has('auth_date')) {
-    const src = Object.fromEntries(url.searchParams.entries())
-    for (const k of FIELDS) url.searchParams.delete(k)
-    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash)
-    return pickFields(src) ?? 'refused'
-  }
-  return null
-}
-
-/** Подписанные данные → проверка в Edge Function → одноразовый токен → сессия Supabase. */
-export async function exchangeTelegram(data: TelegramAuthData): Promise<Session | null> {
+async function call(body: unknown): Promise<{ status: number; data: Record<string, unknown> }> {
   const res = await fetch(`${supabaseUrl}/functions/v1/telegram-auth`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify(body),
   })
-  const body = (await res.json().catch(() => ({}))) as { token_hash?: string; error?: string }
-  if (!res.ok || !body.token_hash)
-    throw new Error(`telegram-auth: ${res.status} ${body.error ?? ''}`)
-  const { data: out, error } = await supabase!.auth.verifyOtp({
-    token_hash: body.token_hash,
+  return {
+    status: res.status,
+    data: (await res.json().catch(() => ({}))) as Record<string, unknown>,
+  }
+}
+
+/** Новый запрос на вход (код + секрет устройства), живёт 10 минут. */
+export async function createTelegramLogin(): Promise<TelegramLogin> {
+  const { status, data } = await call({ action: 'start' })
+  if (status !== 200 || typeof data.code !== 'string' || typeof data.secret !== 'string') {
+    throw new Error(`telegram-auth start: ${status}`)
+  }
+  return {
+    code: data.code,
+    secret: data.secret,
+    expiresAt: Date.parse(String(data.expires_at)) || Date.now() + 10 * 60_000,
+  }
+}
+
+// ── Запрос, который ждёт подтверждения: храним в localStorage — iOS может выгрузить приложение,
+// пока пользователь в Telegram, и после возвращения ожидание продолжится.
+export function saveActiveLogin(l: TelegramLogin | null) {
+  try {
+    if (l) localStorage.setItem(STORE_KEY, JSON.stringify(l))
+    else localStorage.removeItem(STORE_KEY)
+  } catch {
+    /* приватный режим — ожидание просто не переживёт перезагрузку */
+  }
+}
+
+export function loadActiveLogin(): TelegramLogin | null {
+  try {
+    const raw = localStorage.getItem(STORE_KEY)
+    if (!raw) return null
+    const l = JSON.parse(raw) as TelegramLogin
+    if (typeof l.code !== 'string' || typeof l.secret !== 'string' || !(l.expiresAt > Date.now())) {
+      localStorage.removeItem(STORE_KEY)
+      return null
+    }
+    return l
+  } catch {
+    return null
+  }
+}
+
+/** iPhone и iPad (iPad с iPadOS 13+ представляется Mac с сенсорным экраном). */
+function isIos() {
+  const ua = navigator.userAgent
+  return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
+}
+
+export function telegramWebLink(code: string) {
+  return `https://t.me/${TELEGRAM_BOT_NAME}?start=login_${code}`
+}
+
+/**
+ * Открыть бота. На iPhone — схема tg:// (сразу приложение Telegram, страница ME:WISH остаётся на месте,
+ * в том числе в установленном приложении). На компьютере — t.me в новой вкладке (оттуда Telegram Desktop
+ * или веб-версия), чтобы вкладка ME:WISH продолжала ждать. Вызывать прямо в обработчике нажатия.
+ */
+export function openTelegram(code: string) {
+  if (isIos()) {
+    window.location.href = `tg://resolve?domain=${TELEGRAM_BOT_NAME}&start=login_${code}`
+    return
+  }
+  // без 'noopener' в параметрах: с ним window.open всегда возвращает null и не понять, открылось ли окно
+  const w = window.open(telegramWebLink(code), '_blank')
+  if (w) w.opener = null
+  else window.location.href = telegramWebLink(code)
+}
+
+export type PollResult =
+  { status: 'pending' } | { status: 'expired' } | { status: 'ok'; tokenHash: string }
+
+export async function pollTelegram(l: TelegramLogin): Promise<PollResult> {
+  const { status, data } = await call({ action: 'poll', code: l.code, secret: l.secret })
+  if (status === 404) return { status: 'expired' }
+  if (status !== 200) throw new Error(`telegram-auth poll: ${status}`)
+  if (data.status === 'ok' && typeof data.token_hash === 'string') {
+    return { status: 'ok', tokenHash: data.token_hash }
+  }
+  return data.status === 'pending' ? { status: 'pending' } : { status: 'expired' }
+}
+
+/** Одноразовый токен → обычная сессия Supabase. */
+export async function finishTelegram(tokenHash: string): Promise<Session | null> {
+  const { data, error } = await supabase!.auth.verifyOtp({
+    token_hash: tokenHash,
     type: 'magiclink',
   })
   if (error) throw error
-  return out.session
+  return data.session
 }

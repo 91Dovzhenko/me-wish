@@ -432,6 +432,10 @@ enabled = true
 [functions.storage-cleanup]
 verify_jwt = false
 
-# ТЗ 003-f: вход через Telegram. Браузер вызывает функцию до входа (сессии ещё нет), подпись Telegram проверяет сама функция.
+# ТЗ 003-f2: вход через Telegram-бота. Браузер вызывает функцию до входа (сессии ещё нет): создать запрос и опросить его.
 [functions.telegram-auth]
+verify_jwt = false
+
+# ТЗ 003-f2: вебхук бота. Telegram не присылает JWT — функция проверяет заголовок X-Telegram-Bot-Api-Secret-Token.
+[functions.telegram-webhook]
 verify_jwt = false
