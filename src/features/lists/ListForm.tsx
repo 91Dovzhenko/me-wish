@@ -9,6 +9,7 @@ import TextField from '../../components/TextField.tsx'
 import type { CoverMode, ListFields, ListSummary } from '../../data/AppData.tsx'
 import { useIsDesktop } from '../../hooks/useIsDesktop.ts'
 import { formatFullDate } from '../../lib/format.ts'
+import { usePhotoUrls } from '../../lib/photos.ts'
 import {
   LIST_COLOR_NAMES,
   LIST_COLORS,
@@ -247,6 +248,7 @@ export default function ListForm({ list, isLast, onSubmit, onDelete, onClose }: 
             color={f.color}
             onChange={(v) => set('coverMode', v)}
             isDesktop={isDesktop}
+            photos={list?.coverPhotos ?? []}
           />
 
           {/* На телефоне «Удалить список» — внизу формы, над кнопкой «Сохранить» */}
@@ -355,13 +357,17 @@ function CoverPicker({
   color,
   onChange,
   isDesktop,
+  photos,
 }: {
   value: CoverMode
   icon: ListIconName
   color: ListSummary['color']
   onChange: (v: CoverMode) => void
   isDesktop: boolean
+  /** пути фото 4 последних желаний — превью коллажа */
+  photos: string[]
 }) {
+  const urls = usePhotoUrls(photos)
   const option = (mode: CoverMode, preview: React.ReactNode, label: string) => {
     const on = value === mode
     return (
@@ -391,14 +397,21 @@ function CoverPicker({
       >
         {option(
           'collage',
-          // Фото желаний появятся в 003-c; пока — схема коллажа 2×2
+          // фото 4 последних желаний; недостающие плитки — серые (у нового списка — схема 2×2)
           <span
             aria-hidden="true"
             className="grid h-[72px] grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-[11px] lg:h-20"
           >
-            {[0, 1, 2, 3].map((i) => (
-              <span key={i} className="bg-surface-2" />
-            ))}
+            {[0, 1, 2, 3].map((i) => {
+              const src = photos[i] ? urls[photos[i]!] : undefined
+              return (
+                <span key={i} className="relative overflow-hidden bg-surface-2">
+                  {src ? (
+                    <img src={src} alt="" className="absolute inset-0 size-full object-cover" />
+                  ) : null}
+                </span>
+              )
+            })}
           </span>,
           isDesktop ? 'Коллаж' : 'Коллаж · 4 последних желания',
         )}

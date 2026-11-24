@@ -2,6 +2,7 @@ import { Outlet } from 'react-router'
 import { ToastProvider } from '../components/Toast.tsx'
 import { AppDataProvider } from '../data/AppData.tsx'
 import { ListActionsProvider } from '../features/lists/ListActions.tsx'
+import { WishActionsProvider } from '../features/wishes/WishActions.tsx'
 import Sidebar from './Sidebar.tsx'
 
 /**
@@ -14,14 +15,16 @@ export default function AppLayout() {
     <AppDataProvider>
       <ToastProvider>
         <ListActionsProvider>
-          <div className="min-h-dvh bg-bg lg:flex lg:gap-3 lg:p-3">
-            <div className="hidden lg:flex">
-              <Sidebar />
+          <WishActionsProvider>
+            <div className="min-h-dvh bg-bg lg:flex lg:gap-3 lg:p-3">
+              <div className="hidden lg:flex">
+                <Sidebar />
+              </div>
+              <div className="min-w-0 flex-1">
+                <Outlet />
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <Outlet />
-            </div>
-          </div>
+          </WishActionsProvider>
         </ListActionsProvider>
       </ToastProvider>
     </AppDataProvider>

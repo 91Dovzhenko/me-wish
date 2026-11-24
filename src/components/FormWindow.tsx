@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useIsDesktop } from '../hooks/useIsDesktop.ts'
 import { CloseIcon } from './Icons.tsx'
@@ -12,6 +12,33 @@ type Props = {
   footer: ReactNode
   /** отступ окна сверху на компьютере */
   desktopTop?: number
+  /** ширина окна на компьютере (по умолчанию 700) */
+  desktopWidth?: number
+  /** классы строки кнопок на компьютере (по умолчанию — в ряд, по краям) */
+  desktopFooterClassName?: string
+  /** телефон: шторка поднимается над клавиатурой, кнопка внизу — над ней (Mobile-Add-Keyboard) */
+  keyboardAware?: boolean
+}
+
+/** Видимая часть экрана на телефоне: при открытой клавиатуре iOS не уменьшает окно, а только visualViewport. */
+function useVisualViewport(enabled: boolean) {
+  const [box, setBox] = useState<{ top: number; height: number; keyboard: boolean } | null>(null)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!enabled || !vv) return
+    const update = () => {
+      const keyboard = window.innerHeight - vv.height > 120
+      setBox({ top: vv.offsetTop, height: vv.height, keyboard })
+    }
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [enabled])
+  return enabled ? box : null
 }
 
 /**
@@ -19,8 +46,18 @@ type Props = {
  * Телефон — шторка снизу почти на всю высоту, с «ручкой» и кнопкой, прижатой к низу (Mobile-NewList).
  * Компьютер — окно по центру шириной до 700 px (Desktop-NewList).
  */
-export default function FormWindow({ title, onClose, children, footer, desktopTop = 60 }: Props) {
+export default function FormWindow({
+  title,
+  onClose,
+  children,
+  footer,
+  desktopTop = 60,
+  desktopWidth = 700,
+  desktopFooterClassName = 'flex items-center justify-between gap-3 pt-1',
+  keyboardAware = false,
+}: Props) {
   const isDesktop = useIsDesktop()
+  const viewport = useVisualViewport(keyboardAware && !isDesktop)
   const closeRef = useRef(onClose)
   useEffect(() => {
     closeRef.current = onClose
@@ -68,20 +105,25 @@ export default function FormWindow({ title, onClose, children, footer, desktopTo
           role="dialog"
           aria-modal="true"
           aria-labelledby="form-window-title"
-          className="pop-in relative mx-auto mb-6 flex w-[min(700px,calc(100%-48px))] flex-col gap-[18px] rounded-window bg-surface px-[30px] pt-[26px] pb-7 shadow-window"
-          style={{ marginTop: desktopTop }}
+          className="pop-in relative mx-auto mb-6 flex flex-col gap-[18px] rounded-window bg-surface px-[30px] pt-[26px] pb-7 shadow-window"
+          style={{ marginTop: desktopTop, width: `min(${desktopWidth}px, calc(100% - 48px))` }}
         >
           {header}
           {children}
-          <div className="flex items-center justify-between gap-3 pt-1">{footer}</div>
+          <div className={desktopFooterClassName}>{footer}</div>
         </section>
       </div>,
       document.body,
     )
   }
 
+  const rootStyle: CSSProperties | undefined = viewport
+    ? { top: viewport.top, height: viewport.height, bottom: 'auto' }
+    : undefined
+  const keyboard = viewport?.keyboard ?? false
+
   return createPortal(
-    <div className="fixed inset-0 z-40">
+    <div className="fixed inset-0 z-40" style={rootStyle}>
       <div
         aria-hidden="true"
         className="fade-in absolute inset-0 bg-[rgba(23,24,28,0.35)]"
@@ -104,7 +146,11 @@ export default function FormWindow({ title, onClose, children, footer, desktopTo
           {header}
           {children}
         </div>
-        <div className="flex-none bg-surface px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+20px)] shadow-[0_-1px_0_var(--divider)]">
+        <div
+          className={`flex-none bg-surface px-5 pt-3 shadow-[0_-1px_0_var(--divider)] ${
+            keyboard ? 'pb-3' : 'pb-[calc(env(safe-area-inset-bottom)+20px)]'
+          }`}
+        >
           {footer}
         </div>
       </section>

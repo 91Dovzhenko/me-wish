@@ -76,3 +76,49 @@ export function TelegramIcon({ size = 20, ...rest }: IconProps) {
     </svg>
   )
 }
+
+export const MinusIcon = (p: IconProps) => <Line strokeWidth={2} {...p} d="M5 12h14" />
+export const ChevronDownIcon = (p: IconProps) => <Line strokeWidth={2} {...p} d="M6 9l6 6 6-6" />
+export const MoveIcon = (p: IconProps) => (
+  <Line
+    strokeWidth={2}
+    {...p}
+    d="M12 3v18M3 12h18M8 7l4-4 4 4M8 17l4 4 4-4M7 8l-4 4 4 4M17 8l4 4-4 4"
+  />
+)
+export const CropIcon = (p: IconProps) => (
+  <Line {...p} d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14" />
+)
+export const ImageIcon = (p: IconProps) => (
+  <svg
+    width={p.size ?? 20}
+    height={p.size ?? 20}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={p.strokeWidth ?? 1.8}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    focusable="false"
+    className={p.className}
+  >
+    <rect x="3" y="4" width="18" height="16" rx="3" />
+    <circle cx="9" cy="10" r="1.8" />
+    <path d="M21 16l-5-5-8 9" />
+  </svg>
+)
+export const WarnIcon = (p: IconProps) => (
+  <Line
+    strokeWidth={2}
+    {...p}
+    d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"
+  />
+)
+export const GiftIcon = (p: IconProps) => (
+  <Line
+    strokeWidth={1.5}
+    {...p}
+    d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1s3 1 5 1zM12 7c1.5-3 5-3.5 5-1s-3 1-5 1z"
+  />
+)

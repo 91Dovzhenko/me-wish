@@ -27,6 +27,8 @@ export type ListSummary = {
   activeCount: number
   doneCount: number
   doneSum: number
+  /** пути в Storage фото 4 последних добавленных желаний с фото (новые первыми) — для коллажа */
+  coverPhotos: string[]
 }
 
 /** Поля формы списка (создание и настройки). */
@@ -47,6 +49,19 @@ export type Dashboard = {
   doneSum: number
 }
 
+/** Новое желание из формы (D-088). */
+export type NewWish = {
+  /** id задаёт клиент: под ним заранее загружено фото */
+  id: string
+  listId: string
+  title: string
+  price: number | null
+  sourceUrl: string | null
+  description: string | null
+  priority: number
+  imagePath: string | null
+}
+
 type State =
   | { status: 'loading' }
   | { status: 'error' }
@@ -61,6 +76,10 @@ type AppDataValue = State & {
   updateList: (id: string, fields: ListFields) => Promise<void>
   /** мягкое удаление; желания уходят в корзину (D-082). Бросает LastListError, если список последний. */
   deleteList: (id: string) => Promise<void>
+  /** желание + появление в списке одной транзакцией (add_wish) */
+  addWish: (wish: NewWish) => Promise<void>
+  /** растёт после каждого добавления — экран списка перечитывает карточки */
+  wishesVersion: number
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -95,7 +114,7 @@ async function load(userId: string) {
     db
       .from('list_overview')
       .select(
-        'id, title, description, event_date, icon, color, cover_mode, item_count, total_price, active_count, done_count, done_sum, created_at',
+        'id, title, description, event_date, icon, color, cover_mode, item_count, total_price, active_count, done_count, done_sum, cover_photos, created_at',
       )
       .order('created_at', { ascending: true }),
     db.rpc('dashboard_summary', { p_tz: tz }).single(),
@@ -132,6 +151,7 @@ async function load(userId: string) {
       activeCount: Number(l.active_count ?? 0),
       doneCount: Number(l.done_count ?? 0),
       doneSum: Number(l.done_sum ?? 0),
+      coverPhotos: Array.isArray(l.cover_photos) ? (l.cover_photos as string[]) : [],
     })),
     dashboard: {
       activeCount: Number(d.active_count),
@@ -149,6 +169,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const userId = session?.user.id
   const [state, setState] = useState<State>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
+  const [wishesVersion, setWishesVersion] = useState(0)
 
   useEffect(() => {
     if (!userId) return
@@ -207,9 +228,38 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     // обновление данных — после перехода на главную (его делает вызывающий), иначе экран списка мигнёт «не найдено»
   }, [])
 
+  const addWish = useCallback(
+    async (wish: NewWish) => {
+      const { error } = await supabase!.rpc('add_wish', {
+        p_wish_id: wish.id,
+        p_list_id: wish.listId,
+        p_title: wish.title.trim(),
+        p_price: wish.price,
+        p_source_url: wish.sourceUrl,
+        p_description: wish.description?.trim() || null,
+        p_priority: wish.priority,
+        p_image_path: wish.imagePath,
+      })
+      if (error) throw error
+      setWishesVersion((n) => n + 1)
+      // сводки, счётчики и коллажи — тихо; ошибка обновления не отменяет добавление
+      refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
+    },
+    [refresh],
+  )
+
   return (
     <AppDataContext.Provider
-      value={{ ...state, reload, refresh, createList, updateList, deleteList }}
+      value={{
+        ...state,
+        reload,
+        refresh,
+        createList,
+        updateList,
+        deleteList,
+        addWish,
+        wishesVersion,
+      }}
     >
       {children}
     </AppDataContext.Provider>

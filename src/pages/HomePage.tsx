@@ -4,16 +4,18 @@ import { AlertIcon, CheckIcon, PlusIcon } from '../components/Icons.tsx'
 import { CoverSkeleton, SkeletonBlock } from '../components/Skeleton.tsx'
 import { useAppData, type Dashboard, type ListSummary } from '../data/AppData.tsx'
 import { useListActions } from '../features/lists/ListActions.tsx'
+import { useWishActions } from '../features/wishes/WishActions.tsx'
 import MobileHeader from '../layout/MobileHeader.tsx'
 import { formatEventDate, formatRub, listMeta } from '../lib/format.ts'
+import { usePhotoUrls } from '../lib/photos.ts'
 
 // Главная: Main / Mobile-FirstRun / Mobile-Home-Loading (телефон),
 // Desktop-Home / Desktop-FirstRun / Desktop-Home-Loading (компьютер).
-// Кнопки добавления желаний оживут в 003-c.
 
 export default function HomePage() {
   const data = useAppData()
   const { openCreate } = useListActions()
+  const { openAdd } = useWishActions()
   const ready = data.status === 'ready'
   const firstRun =
     ready &&
@@ -36,7 +38,7 @@ export default function HomePage() {
           </div>
           <Button
             variant="primary"
-            inactive
+            onClick={() => openAdd()}
             className="h-12 flex-none rounded-[16px] px-5 text-[15px]"
           >
             <PlusIcon size={18} strokeWidth={2.2} />
@@ -69,14 +71,18 @@ export default function HomePage() {
                   {data.lists.map((l) => (
                     <ListCover key={l.id} list={l} />
                   ))}
-                  {firstRun ? <StartCard className="col-span-2 hidden lg:flex" /> : null}
+                  {firstRun ? (
+                    <StartCard className="col-span-2 hidden lg:flex" onAdd={() => openAdd()} />
+                  ) : null}
                 </>
               ) : (
                 [0, 1, 2, 3].map((i) => <CoverSkeleton key={i} />)
               )}
             </div>
 
-            {firstRun ? <StartCard className="mt-1.5 flex lg:hidden" /> : null}
+            {firstRun ? (
+              <StartCard className="mt-1.5 flex lg:hidden" onAdd={() => openAdd()} />
+            ) : null}
           </section>
         )}
       </main>
@@ -85,9 +91,8 @@ export default function HomePage() {
       <button
         type="button"
         aria-label="Добавить желание"
-        aria-disabled="true"
-        title="Скоро"
-        className="fixed right-5 bottom-[calc(env(safe-area-inset-bottom)+28px)] z-10 flex size-16 cursor-default items-center justify-center rounded-full bg-accent text-text shadow-fab lg:hidden"
+        onClick={() => openAdd()}
+        className="fixed right-5 bottom-[calc(env(safe-area-inset-bottom)+28px)] z-10 flex size-16 cursor-pointer items-center justify-center rounded-full bg-accent text-text shadow-fab lg:hidden"
       >
         <PlusIcon size={28} />
       </button>
@@ -96,8 +101,11 @@ export default function HomePage() {
 }
 
 function ListCover({ list }: { list: ListSummary }) {
+  const urls = usePhotoUrls(list.coverMode === 'collage' ? list.coverPhotos : [])
   return (
     <Cover
+      // пока ссылка не получена — пустая плитка коллажа (без «прыжка» с иконки на фото)
+      photos={list.coverPhotos.map((p) => urls[p] ?? '')}
       title={list.title}
       meta={listMeta(list.itemCount, list.totalPrice)}
       date={list.eventDate ? formatEventDate(list.eventDate) : undefined}
@@ -149,7 +157,7 @@ function SummarySkeleton() {
 }
 
 /** Блок «С чего начать» (Mobile-FirstRun / Desktop-FirstRun). */
-function StartCard({ className = '' }: { className?: string }) {
+function StartCard({ className = '', onAdd }: { className?: string; onAdd: () => void }) {
   return (
     <div
       className={`flex-col items-start gap-2.5 rounded-[28px] bg-surface px-5 py-[22px] lg:justify-center lg:rounded-[26px] lg:px-7 lg:py-[26px] ${className}`}
@@ -170,7 +178,7 @@ function StartCard({ className = '' }: { className?: string }) {
       </p>
       <Button
         variant="dark"
-        inactive
+        onClick={onAdd}
         className="mt-1.5 h-auto rounded-[16px] px-[18px] py-[13px] text-[15px] lg:h-12 lg:px-5 lg:py-0"
       >
         Добавить первое желание

@@ -11,7 +11,7 @@ type Props = {
   color: ListColor
   /** 'icon' — всегда иконка; 'collage' — коллаж, если есть фото */
   coverMode?: 'collage' | 'icon'
-  /** адреса фото последних добавленных желаний (новые первыми), берутся до 4 */
+  /** адреса фото последних добавленных желаний (новые первыми), берутся до 4; '' — фото ещё грузится */
   photos?: string[]
   /** адрес экрана списка; без него обложка не кликабельна */
   to?: string
@@ -54,13 +54,15 @@ export default function Cover({
                   n === 3 && i === 0 ? 'row-span-2' : ''
                 }`}
               >
-                <img
-                  src={src}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 block size-full object-cover"
-                />
+                {src ? (
+                  <img
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 block size-full object-cover"
+                  />
+                ) : null}
               </div>
             ))}
           </div>

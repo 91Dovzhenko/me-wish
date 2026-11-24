@@ -20,13 +20,17 @@ import {
 } from '../components/Menu.tsx'
 import { SkeletonBlock } from '../components/Skeleton.tsx'
 import { useAppData, type ListSummary } from '../data/AppData.tsx'
+import WishCard from '../components/WishCard.tsx'
 import { useListActions } from '../features/lists/ListActions.tsx'
+import { useWishActions } from '../features/wishes/WishActions.tsx'
+import { useListWishes, type ListWish } from '../features/wishes/useListWishes.ts'
 import { countSum } from '../lib/format.ts'
+import { usePhotoUrls } from '../lib/photos.ts'
 import NotFoundPage from './NotFoundPage.tsx'
 
 // Экран списка: Mobile-List / Mobile-List-Compact / Mobile-List-Empty / Mobile-List-Loading,
 // Desktop-List / Desktop-List-Empty / Desktop-List-Loading. Меню «•••» — Mobile-List-Menu(-Last), Desktop-List-Menu.
-// Карточки желаний, сортировка и «Исполненные» — 003-d; добавление желаний — 003-c (кнопки пока неактивны).
+// Сетка карточек — WishCard / Spec-Cards (только просмотр). Открытие карточки, сортировка, «Исполненные» — 003-d.
 
 export default function ListPage() {
   const { listId } = useParams()
@@ -52,11 +56,29 @@ export default function ListPage() {
   // Чужой, удалённый или несуществующий список база не отдаёт
   if (!list) return <NotFoundPage />
 
-  return <ListView key={list.id} list={list} isLast={data.lists.length <= 1} />
+  return (
+    <ListView
+      key={list.id}
+      list={list}
+      isLast={data.lists.length <= 1}
+      wishesVersion={data.wishesVersion}
+    />
+  )
 }
 
-function ListView({ list, isLast }: { list: ListSummary; isLast: boolean }) {
+function ListView({
+  list,
+  isLast,
+  wishesVersion,
+}: {
+  list: ListSummary
+  isLast: boolean
+  wishesVersion: number
+}) {
   const hasItems = list.itemCount > 0
+  const { openAdd } = useWishActions()
+  const add = () => openAdd({ listId: list.id })
+  const wishes = useListWishes(list.id, hasItems, wishesVersion)
 
   return (
     <>
@@ -89,17 +111,28 @@ function ListView({ list, isLast }: { list: ListSummary; isLast: boolean }) {
             {hasItems ? <ListSummaryLine list={list} /> : null}
           </div>
           <div className="hidden flex-none lg:block">
-            <Button variant="primary" inactive className="h-12 rounded-[16px] px-5 text-[15px]">
+            <Button
+              variant="primary"
+              onClick={add}
+              className="h-12 rounded-[16px] px-5 text-[15px]"
+            >
               <PlusIcon size={18} strokeWidth={2.2} />
               Добавить желание
             </Button>
           </div>
         </div>
 
-        {hasItems ? <ListChips /> : <EmptyState list={list} />}
+        {hasItems ? (
+          <>
+            <ListChips />
+            <WishGrid state={wishes.state} onRetry={wishes.retry} />
+          </>
+        ) : (
+          <EmptyState list={list} onAdd={add} />
+        )}
       </main>
 
-      <AddFab />
+      <AddFab onClick={add} />
     </>
   )
 }
@@ -116,15 +149,14 @@ function BackButton() {
   )
 }
 
-/** Плавающая «+» телефона — оживёт в 003-c. */
-function AddFab() {
+/** Плавающая «+» телефона — добавить в этот список. */
+function AddFab({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
       aria-label="Добавить желание в этот список"
-      aria-disabled="true"
-      title="Скоро"
-      className="fixed right-5 bottom-[calc(env(safe-area-inset-bottom)+28px)] z-10 flex size-16 cursor-default items-center justify-center rounded-full bg-accent text-text shadow-fab lg:hidden"
+      onClick={onClick}
+      className="fixed right-5 bottom-[calc(env(safe-area-inset-bottom)+28px)] z-10 flex size-16 cursor-pointer items-center justify-center rounded-full bg-accent text-text shadow-fab lg:hidden"
     >
       <PlusIcon size={28} />
     </button>
@@ -184,7 +216,7 @@ function ListChips() {
 }
 
 /** «Здесь пока пусто» — Mobile-List-Empty / Desktop-List-Empty. */
-function EmptyState({ list }: { list: ListSummary }) {
+function EmptyState({ list, onAdd }: { list: ListSummary; onAdd: () => void }) {
   return (
     <div className="mt-10 flex flex-col items-center gap-3 px-5 text-center lg:mt-5 lg:rounded-[28px] lg:bg-surface lg:px-6 lg:py-14">
       <span className="flex size-[76px] items-center justify-center rounded-[26px] bg-surface lg:hidden">
@@ -201,11 +233,78 @@ function EmptyState({ list }: { list: ListSummary }) {
       </span>
       <Button
         variant="dark"
-        inactive
+        onClick={onAdd}
         className="mt-1.5 h-[50px] px-5 text-[15px] lg:mt-2 lg:px-[22px]"
       >
         Добавить первое желание
       </Button>
+    </div>
+  )
+}
+
+const GRID =
+  'grid grid-cols-2 gap-2.5 lg:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] lg:gap-3.5'
+
+/**
+ * Сетка карточек: телефон — 2 колонки, компьютер — 4–5 (Mobile-List / Desktop-List).
+ * Порядок — по приоритету, при равном — новые первыми (D-057). Все карточки ряда одной высоты (D-096).
+ */
+function WishGrid({
+  state,
+  onRetry,
+}: {
+  state: ReturnType<typeof useListWishes>['state']
+  onRetry: () => void
+}) {
+  const items = state.status === 'ready' ? state.items : []
+  const urls = usePhotoUrls(items.map((w) => w.imagePath))
+
+  if (state.status === 'loading') return <GridSkeleton />
+  if (state.status === 'error') {
+    return (
+      <div className="flex flex-col items-start gap-3 px-1 lg:px-0">
+        <p role="alert" className="m-0 text-sm font-medium text-danger">
+          Не получилось загрузить желания. Проверьте интернет.
+        </p>
+        <Button variant="dark" onClick={onRetry}>
+          Попробовать ещё раз
+        </Button>
+      </div>
+    )
+  }
+  return (
+    <ul aria-label="Желания" className={`m-0 list-none p-0 ${GRID}`}>
+      {items.map((w: ListWish) => (
+        <li key={w.itemId} className="min-w-0">
+          <WishCard
+            title={w.title}
+            price={w.price}
+            photoUrl={w.imagePath ? urls[w.imagePath] : null}
+            priority={w.priority}
+            status={w.status}
+          />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function GridSkeleton() {
+  return (
+    <div className={GRID} aria-hidden="true">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className={`flex flex-col gap-2 rounded-[20px] bg-surface px-1.5 pt-1.5 pb-3 ${
+            i === 4 ? 'hidden lg:flex' : ''
+          }`}
+        >
+          <SkeletonBlock className="aspect-square rounded-[15px]" />
+          <SkeletonBlock className="mx-1.5 h-3.5 w-[45%] rounded-[7px]" />
+          <SkeletonBlock tone="soft" className="mx-1.5 h-2.5 w-[85%] rounded-[5px]" />
+          <SkeletonBlock tone="soft" className="mx-1.5 h-2.5 w-[60%] rounded-[5px]" />
+        </div>
+      ))}
     </div>
   )
 }
@@ -307,24 +406,7 @@ function ListLoading() {
         <SkeletonBlock tone="line" className="h-10 w-[150px] rounded-full" />
         <SkeletonBlock tone="line" className="h-10 w-[150px] rounded-full" />
       </div>
-      <div
-        className="grid grid-cols-2 gap-2.5 lg:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] lg:gap-3.5"
-        aria-hidden="true"
-      >
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className={`flex flex-col gap-2 rounded-[20px] bg-surface px-1.5 pt-1.5 pb-3 ${
-              i === 4 ? 'hidden lg:flex' : ''
-            }`}
-          >
-            <SkeletonBlock className="aspect-square rounded-[15px]" />
-            <SkeletonBlock className="mx-1.5 h-3.5 w-[45%] rounded-[7px]" />
-            <SkeletonBlock tone="soft" className="mx-1.5 h-2.5 w-[85%] rounded-[5px]" />
-            <SkeletonBlock tone="soft" className="mx-1.5 h-2.5 w-[60%] rounded-[5px]" />
-          </div>
-        ))}
-      </div>
+      <GridSkeleton />
     </main>
   )
 }
