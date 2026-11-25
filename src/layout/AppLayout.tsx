@@ -4,6 +4,7 @@ import { ToastProvider } from '../components/Toast.tsx'
 import { AppDataProvider } from '../data/AppData.tsx'
 import { ListActionsProvider } from '../features/lists/ListActions.tsx'
 import InstallHint from '../features/install/InstallHint.tsx'
+import MembershipWatcher from '../features/members/MembershipWatcher.tsx'
 import { WishActionsProvider } from '../features/wishes/WishActions.tsx'
 import Sidebar from './Sidebar.tsx'
 
@@ -28,6 +29,7 @@ export default function AppLayout() {
               </div>
             </div>
             <InstallHint />
+            <MembershipWatcher />
           </WishActionsProvider>
         </ListActionsProvider>
       </ToastProvider>

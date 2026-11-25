@@ -67,6 +67,28 @@ export type WishItem = {
   addedAt: string
 }
 
+/** Роль в списке (DOMAIN §4). */
+export type ListRole = 'editor' | 'viewer'
+
+/** Участник списка (004-a): имя и аватар — из profiles_public (только тех, с кем есть общий список). */
+export type Member = {
+  userId: string
+  name: string
+  avatarUrl: string | null
+  avatarPath: string | null
+  role: ListRole
+  addedAt: string
+  isMe: boolean
+}
+
+/** Ссылка-приглашение в «Участниках» (токена в базе нет — только хэш). */
+export type InviteLink = {
+  id: string
+  role: ListRole
+  createdAt: string
+  expiresAt: string
+}
+
 export type ListSummary = {
   id: string
   title: string
@@ -84,6 +106,10 @@ export type ListSummary = {
   doneSum: number
   /** пути в Storage фото 4 последних добавленных желаний с фото (новые первыми) — для коллажа */
   coverPhotos: string[]
+  /** моя роль в списке */
+  myRole: ListRole
+  /** участники: сначала я, затем по дате вступления */
+  members: Member[]
 }
 
 /** Поля формы списка (создание и настройки). */
@@ -140,6 +166,8 @@ type Ready = {
   items: WishItem[]
   /** корзина: новые удалённые первыми */
   trash: TrashItem[]
+  /** сколько у меня живых списков, где я редактор (последний такой нельзя удалить или покинуть, D-082) */
+  editorListCount: number
 }
 
 type AppDataValue = ({ status: 'loading' } | { status: 'error' } | Ready) & {
@@ -170,13 +198,40 @@ type AppDataValue = ({ status: 'loading' } | { status: 'error' } | Ready) & {
   /** «Очистить корзину»: навсегда, вместе с фото */
   emptyTrash: (itemIds: string[]) => Promise<void>
   updateProfile: (patch: ProfilePatch) => Promise<void>
+  /** растёт при каждом применённом обновлении данных — повод перечитать то, чего нет в снимке (ссылки) */
+  dataVersion: number
+  // ─── Участники и приглашения (004-a) ───
+  createInvite: (
+    listId: string,
+    role: ListRole,
+  ) => Promise<{ id: string; token: string; expiresAt: string }>
+  fetchInvites: (listId: string) => Promise<InviteLink[]>
+  revokeInvite: (inviteId: string) => Promise<void>
+  /** принять по токену → id списка */
+  acceptInvite: (token: string) => Promise<string>
+  setMemberRole: (listId: string, userId: string, role: ListRole) => Promise<void>
+  removeMember: (listId: string, userId: string) => Promise<void>
+  /** выйти; если я последний редактор — список удаляется у всех ('deleted'). Бросает LastListError. */
+  leaveList: (listId: string) => Promise<'left' | 'deleted'>
+  /** этот список пропадёт из-за моего действия — без тоста «Вас убрали» */
+  expectGone: (listId: string) => void
+  /** был ли список помечен expectGone (и снять пометку) */
+  takeExpectedGone: (listId: string) => boolean
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export class LastListError extends Error {
-  constructor() {
-    super('Нельзя удалить единственный список')
+  constructor(message = 'Нельзя удалить единственный список') {
+    super(message)
   }
+}
+
+type MemberRow = { list_id: string; user_id: string; role: ListRole; added_at: string }
+type PublicProfile = {
+  id: string
+  display_name: string
+  avatar_url: string | null
+  avatar_path: string | null
 }
 
 function toRow(f: ListFields) {
@@ -224,7 +279,7 @@ const AppDataContext = createContext<AppDataValue | null>(null)
 /** Профиль, списки, все желания и корзина — запросы одновременно, результат применяется целиком. */
 async function load(userId: string): Promise<Snapshot> {
   const db = supabase!
-  const [profileRes, listsRes, itemsRes, trashRes] = await Promise.all([
+  const [profileRes, listsRes, itemsRes, trashRes, membersRes, peopleRes] = await Promise.all([
     db
       .from('profiles')
       .select('id, display_name, avatar_url, avatar_path, default_list_id, telegram_id')
@@ -246,11 +301,46 @@ async function load(userId: string): Promise<Snapshot> {
       .order('id', { ascending: true }),
     // корзина — с названиями удалённых списков, которые lists не отдаёт
     db.rpc('trash_items'),
+    // участники всех моих списков (RLS: состав видят участники) и их имена/аватары
+    db.from('list_members').select('list_id, user_id, role, added_at'),
+    db.rpc('profiles_public'),
   ])
   if (profileRes.error) throw profileRes.error
   if (listsRes.error) throw listsRes.error
   if (itemsRes.error) throw itemsRes.error
   if (trashRes.error) throw trashRes.error
+  if (membersRes.error) throw membersRes.error
+  if (peopleRes.error) throw peopleRes.error
+
+  const people = new Map(((peopleRes.data ?? []) as PublicProfile[]).map((x) => [x.id, x]))
+  const membersByList = new Map<string, Member[]>()
+  for (const m of (membersRes.data ?? []) as MemberRow[]) {
+    const pp = people.get(m.user_id)
+    const arr = membersByList.get(m.list_id) ?? []
+    arr.push({
+      userId: m.user_id,
+      name: pp?.display_name || 'Участник',
+      avatarUrl: pp?.avatar_url ?? null,
+      avatarPath: pp?.avatar_path ?? null,
+      role: m.role === 'viewer' ? 'viewer' : 'editor',
+      addedAt: m.added_at,
+      isMe: m.user_id === userId,
+    })
+    membersByList.set(m.list_id, arr)
+  }
+  for (const arr of membersByList.values()) {
+    arr.sort((a, b) =>
+      a.isMe !== b.isMe
+        ? a.isMe
+          ? -1
+          : 1
+        : a.addedAt < b.addedAt
+          ? -1
+          : a.addedAt > b.addedAt
+            ? 1
+            : 0,
+    )
+  }
 
   const p = profileRes.data
   const lists = listsRes.data.map((l): ListMeta => ({
@@ -261,6 +351,8 @@ async function load(userId: string): Promise<Snapshot> {
     icon: asListIcon(l.icon),
     color: asListColor(l.color),
     coverMode: l.cover_mode === 'icon' ? 'icon' : 'collage',
+    members: membersByList.get(l.id) ?? [],
+    myRole: membersByList.get(l.id)?.find((m) => m.isMe)?.role ?? 'editor',
   }))
   const alive = new Set(lists.map((l) => l.id))
   const items = ((itemsRes.data ?? []) as unknown as ItemRow[])
@@ -374,7 +466,8 @@ function derive(s: Snapshot): Omit<Ready, 'status' | 'profile'> {
       dashboard.doneSum += it.price ?? 0
     }
   }
-  return { lists, dashboard, items: s.items, trash: s.trash }
+  const editorListCount = s.lists.filter((l) => l.myRole === 'editor').length
+  return { lists, dashboard, items: s.items, trash: s.trash, editorListCount }
 }
 
 /** Изменить одно желание в снимке. */
@@ -399,6 +492,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
   const [liveStatus, setLiveStatus] = useState<LiveStatus>('connecting')
+  const [dataVersion, setDataVersion] = useState(0)
+  // списки, которые пропадут из-за моего действия (выход, удаление) — без тоста «Вас убрали»
+  const expected = useRef(new Set<string>())
 
   // Ответы приходят не по порядку, а изменения применяются сразу (не дожидаясь сервера).
   // Номер запроса растёт при каждой загрузке и в начале/конце каждого изменения: применяется только
@@ -416,6 +512,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         if (!alive || my !== seq.current) return
         lastSyncAt.current = Date.now()
         setState({ status: 'ready', ...data })
+        setDataVersion((n) => n + 1)
+        setDataVersion((n) => n + 1)
       })
       .catch((e) => {
         console.warn('Не удалось загрузить данные:', e)
@@ -473,11 +571,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'lists' }, sync)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'list_items' }, sync)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes' }, sync)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'list_members', filter: `user_id=eq.${userId}` },
-          sync,
-        )
+        // весь состав: кто-то принял приглашение, сменили роль, убрали (Realtime сам проверяет RLS)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'list_members' }, sync)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'invites' }, sync)
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
@@ -603,8 +699,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   )
 
   const deleteList = useCallback(async (id: string) => {
+    expected.current.add(id)
     const { error } = await supabase!.rpc('delete_list', { p_list_id: id })
     if (error) {
+      expected.current.delete(id)
       if (error.message.includes('last_list')) throw new LastListError()
       throw error
     }
@@ -830,6 +928,107 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     [mutate, userId],
   )
 
+  // ─── Участники и приглашения (004-a) ───
+
+  const createInvite = useCallback(async (listId: string, role: ListRole) => {
+    const { data, error } = await supabase!.rpc('create_invite', {
+      p_list_id: listId,
+      p_role: role,
+    })
+    if (error) throw error
+    const row = (data as { invite_id: string; token: string; expires_at: string }[])[0]
+    if (!row) throw new Error('create_invite: пустой ответ')
+    return { id: row.invite_id, token: row.token, expiresAt: row.expires_at }
+  }, [])
+
+  const fetchInvites = useCallback(async (listId: string): Promise<InviteLink[]> => {
+    const { data, error } = await supabase!
+      .from('invites')
+      .select('id, role, created_at, expires_at')
+      .eq('list_id', listId)
+      .is('revoked_at', null)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return (data ?? []).map((r) => ({
+      id: r.id,
+      role: r.role === 'viewer' ? 'viewer' : 'editor',
+      createdAt: r.created_at,
+      expiresAt: r.expires_at,
+    }))
+  }, [])
+
+  const revokeInvite = useCallback(async (inviteId: string) => {
+    const { error } = await supabase!.rpc('revoke_invite', { p_invite_id: inviteId })
+    if (error) throw error
+  }, [])
+
+  const acceptInvite = useCallback(
+    async (token: string) => {
+      const { data, error } = await supabase!.rpc('accept_invite', { p_token: token })
+      if (error) throw error
+      await refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
+      return data as string
+    },
+    [refresh],
+  )
+
+  const patchMembers =
+    (listId: string, f: (m: Member[]) => Member[]) =>
+    (s: Snapshot): Snapshot => ({
+      ...s,
+      lists: s.lists.map((l) => (l.id === listId ? { ...l, members: f(l.members) } : l)),
+    })
+
+  const setMemberRole = useCallback(
+    (listId: string, userId: string, role: ListRole) =>
+      mutate(
+        patchMembers(listId, (ms) => ms.map((m) => (m.userId === userId ? { ...m, role } : m))),
+        async () => {
+          const { error } = await supabase!.rpc('set_member_role', {
+            p_list_id: listId,
+            p_user_id: userId,
+            p_role: role,
+          })
+          if (error) throw error
+        },
+      ),
+    [mutate],
+  )
+
+  const removeMember = useCallback(
+    (listId: string, userId: string) =>
+      mutate(
+        patchMembers(listId, (ms) => ms.filter((m) => m.userId !== userId)),
+        async () => {
+          const { error } = await supabase!.rpc('remove_member', {
+            p_list_id: listId,
+            p_user_id: userId,
+          })
+          if (error) throw error
+        },
+      ),
+    [mutate],
+  )
+
+  const leaveList = useCallback(async (listId: string) => {
+    expected.current.add(listId)
+    const { data, error } = await supabase!.rpc('leave_list', { p_list_id: listId })
+    if (error) {
+      expected.current.delete(listId)
+      if (error.message.includes('last_list'))
+        throw new LastListError('Нельзя выйти из единственного списка')
+      throw error
+    }
+    // обновление данных — после перехода на главную (его делает вызывающий)
+    return data === 'deleted' ? 'deleted' : 'left'
+  }, [])
+
+  const expectGone = useCallback((listId: string) => {
+    expected.current.add(listId)
+  }, [])
+  const takeExpectedGone = useCallback((listId: string) => expected.current.delete(listId), [])
+
   const derived = useMemo(() => (state.status === 'ready' ? derive(state) : null), [state])
 
   const base =
@@ -860,6 +1059,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         restoreFromTrash,
         emptyTrash,
         updateProfile,
+        dataVersion,
+        createInvite,
+        fetchInvites,
+        revokeInvite,
+        acceptInvite,
+        setMemberRole,
+        removeMember,
+        leaveList,
+        expectGone,
+        takeExpectedGone,
       }}
     >
       {children}

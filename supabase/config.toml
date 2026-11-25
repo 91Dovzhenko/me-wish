@@ -439,3 +439,7 @@ verify_jwt = false
 # ТЗ 003-f2: вебхук бота. Telegram не присылает JWT — функция проверяет заголовок X-Telegram-Bot-Api-Secret-Token.
 [functions.telegram-webhook]
 verify_jwt = false
+
+# ТЗ 004-a: карточка приглашения. Нужна и до входа, данные отдаются только по действующему токену.
+[functions.invite-preview]
+verify_jwt = false

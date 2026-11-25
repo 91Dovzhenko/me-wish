@@ -4,6 +4,7 @@ import Dialog from '../../components/Dialog.tsx'
 import { SAVE_ERROR, useToast } from '../../components/Toast.tsx'
 import { LastListError, useAppData, type ListSummary } from '../../data/AppData.tsx'
 import { plural } from '../../lib/format.ts'
+import MembersWindow from '../members/MembersWindow.tsx'
 import ListForm from './ListForm.tsx'
 
 type ListActionsValue = {
@@ -11,8 +12,12 @@ type ListActionsValue = {
   openCreate: () => void
   /** «Редактировать» — настройки списка */
   openEdit: (list: ListSummary) => void
-  /** «Удалить» — подтверждение и удаление */
+  /** «Удалить» — подтверждение и удаление (в совместном — «у всех», 2.27) */
   askDelete: (list: ListSummary) => void
+  /** «Участники» (004-a) */
+  openMembers: (list: ListSummary) => void
+  /** «Выйти из списка» — 2.28, последний редактор — 2.29 */
+  askLeave: (list: ListSummary) => void
 }
 
 const ListActionsContext = createContext<ListActionsValue | null>(null)
@@ -27,13 +32,42 @@ export function ListActionsProvider({ children }: { children: ReactNode }) {
   )
   const [deleting, setDeleting] = useState<ListSummary | null>(null)
   const [busy, setBusy] = useState(false)
+  const [membersOf, setMembersOf] = useState<string | null>(null)
+  const [leaving, setLeaving] = useState<ListSummary | null>(null)
 
-  const listCount = data.status === 'ready' ? data.lists.length : 0
-  const { createList, updateList, deleteList, refresh } = data
+  // последний список, где я редактор, удалить или покинуть нельзя (D-082)
+  const editorListCount = data.status === 'ready' ? data.editorListCount : 0
+  const { createList, updateList, deleteList, leaveList, refresh } = data
+  const membersList =
+    membersOf && data.status === 'ready'
+      ? (data.lists.find((l) => l.id === membersOf) ?? null)
+      : null
 
   const openCreate = useCallback(() => setForm({ mode: 'create' }), [])
   const openEdit = useCallback((list: ListSummary) => setForm({ mode: 'edit', list }), [])
   const askDelete = useCallback((list: ListSummary) => setDeleting(list), [])
+  const openMembers = useCallback((list: ListSummary) => setMembersOf(list.id), [])
+  const askLeave = useCallback((list: ListSummary) => setLeaving(list), [])
+
+  const confirmLeave = async () => {
+    if (!leaving) return
+    const title = leaving.title
+    setBusy(true)
+    try {
+      const res = await leaveList(leaving.id)
+      setLeaving(null)
+      setMembersOf(null)
+      navigate('/', { replace: true })
+      toast({ text: res === 'deleted' ? `Список «${title}» удалён` : `Вы вышли из «${title}»` })
+      refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
+    } catch (e) {
+      setLeaving(null)
+      if (e instanceof LastListError) toast({ text: e.message, kind: 'error' })
+      else toast({ text: SAVE_ERROR, kind: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const confirmDelete = async () => {
     if (!deleting) return
@@ -42,6 +76,7 @@ export function ListActionsProvider({ children }: { children: ReactNode }) {
       await deleteList(deleting.id)
       setDeleting(null)
       setForm(null)
+      setMembersOf(null)
       navigate('/', { replace: true })
       toast({ text: 'Список удалён' })
       refresh().catch((e) => console.warn('Не удалось обновить данные:', e))
@@ -55,8 +90,8 @@ export function ListActionsProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo(
-    () => ({ openCreate, openEdit, askDelete }),
-    [openCreate, openEdit, askDelete],
+    () => ({ openCreate, openEdit, askDelete, openMembers, askLeave }),
+    [openCreate, openEdit, askDelete, openMembers, askLeave],
   )
 
   return (
@@ -83,7 +118,7 @@ export function ListActionsProvider({ children }: { children: ReactNode }) {
         <ListForm
           key={form.list.id}
           list={form.list}
-          isLast={listCount <= 1}
+          isLast={form.list.myRole === 'editor' && editorListCount <= 1}
           onClose={() => setForm(null)}
           onDelete={() => setDeleting(form.list)}
           onSubmit={async (fields) => {
@@ -98,7 +133,34 @@ export function ListActionsProvider({ children }: { children: ReactNode }) {
         />
       ) : null}
 
-      {deleting ? (
+      {membersList ? (
+        <MembersWindow
+          list={membersList}
+          onClose={() => setMembersOf(null)}
+          onLeave={() => setLeaving(membersList)}
+        />
+      ) : null}
+
+      {leaving ? (
+        <LeaveDialog
+          list={leaving}
+          busy={busy}
+          onConfirm={() => void confirmLeave()}
+          onCancel={() => !busy && setLeaving(null)}
+        />
+      ) : null}
+
+      {deleting && deleting.members.length > 1 ? (
+        <Dialog
+          title={`Удалить «${deleting.title}» у всех участников?`}
+          body={`Желания попадут в корзину у всех редакторов. ${othersLoseAccess(deleting)}`}
+          primary="Удалить у всех"
+          secondary="Отмена"
+          busy={busy}
+          onPrimary={() => void confirmDelete()}
+          onSecondary={() => !busy && setDeleting(null)}
+        />
+      ) : deleting ? (
         <Dialog
           title={
             deleting.itemCount > 0
@@ -118,6 +180,50 @@ export function ListActionsProvider({ children }: { children: ReactNode }) {
         />
       ) : null}
     </ListActionsContext.Provider>
+  )
+}
+
+function othersLoseAccess(list: ListSummary) {
+  const others = list.members.filter((m) => !m.isMe)
+  return others.length === 1
+    ? `${others[0]!.name} тоже потеряет доступ к списку.`
+    : 'Остальные участники тоже потеряют доступ к списку.'
+}
+
+/** «Выйти из списка?» (2.28) или, если я последний редактор, «Вы последний редактор» (2.29). */
+function LeaveDialog({
+  list,
+  busy,
+  onConfirm,
+  onCancel,
+}: {
+  list: ListSummary
+  busy: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  const lastEditor =
+    list.myRole === 'editor' && !list.members.some((m) => !m.isMe && m.role === 'editor')
+  return lastEditor ? (
+    <Dialog
+      title="Вы последний редактор"
+      body={`Если выйти, список «${list.title}» удалится, а его желания попадут в корзину.`}
+      primary="Выйти и удалить"
+      secondary="Остаться"
+      busy={busy}
+      onPrimary={onConfirm}
+      onSecondary={onCancel}
+    />
+  ) : (
+    <Dialog
+      title={`Выйти из списка «${list.title}»?`}
+      body="Вы больше не увидите его желания. Вернуться можно по новому приглашению."
+      primary="Выйти"
+      secondary="Остаться"
+      busy={busy}
+      onPrimary={onConfirm}
+      onSecondary={onCancel}
+    />
   )
 }
 

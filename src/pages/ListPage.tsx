@@ -66,7 +66,7 @@ export default function ListPage() {
       key={list.id}
       list={list}
       allItems={data.items}
-      isLast={data.lists.length <= 1}
+      isLast={list.myRole === 'editor' && data.editorListCount <= 1}
       itemId={itemMatch?.[1] ?? null}
     />
   )
@@ -446,7 +446,9 @@ function GridSkeleton() {
 
 /** Меню «•••»: телефон — под кнопкой справа, компьютер — рядом с названием. */
 function ListMenu({ list, isLast }: { list: ListSummary; isLast: boolean }) {
-  const { openEdit, askDelete } = useListActions()
+  const { openEdit, askDelete, openMembers, askLeave } = useListActions()
+  const isEditor = list.myRole === 'editor'
+  const shared = list.members.length > 1
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   useDismiss(rootRef, open, () => setOpen(false))
@@ -481,17 +483,29 @@ function ListMenu({ list, isLast }: { list: ListSummary; isLast: boolean }) {
             label="Меню списка"
             className="absolute top-[52px] right-0 z-30 w-[220px] lg:top-[52px] lg:right-auto lg:left-0 lg:w-[210px]"
           >
+            {/* 2.18 — редактор; 2.20 — зритель: только «Участники» и «Выйти» */}
+            {isEditor ? (
+              <MenuItem
+                icon={<EditIcon size={18} className="flex-none" />}
+                onClick={() => {
+                  setOpen(false)
+                  openEdit(list)
+                }}
+              >
+                Редактировать
+              </MenuItem>
+            ) : null}
             <MenuItem
-              icon={<EditIcon size={18} className="flex-none" />}
+              icon={<PeopleIcon />}
               onClick={() => {
                 setOpen(false)
-                openEdit(list)
+                openMembers(list)
               }}
             >
-              Редактировать
+              Участники
             </MenuItem>
             <MenuDivider />
-            {isLast ? (
+            {!isEditor ? null : isLast ? (
               <MenuItemDisabled icon={trash} hint="Нельзя удалить единственный список">
                 Удалить
               </MenuItemDisabled>
@@ -507,10 +521,67 @@ function ListMenu({ list, isLast }: { list: ListSummary; isLast: boolean }) {
                 Удалить
               </MenuItem>
             )}
+            {!shared ? null : isLast ? (
+              <MenuItemDisabled
+                icon={<LeaveIcon disabled />}
+                hint="Нельзя выйти из единственного списка"
+              >
+                Выйти из списка
+              </MenuItemDisabled>
+            ) : (
+              <MenuItem
+                danger
+                icon={<LeaveIcon />}
+                onClick={() => {
+                  setOpen(false)
+                  askLeave(list)
+                }}
+              >
+                Выйти из списка
+              </MenuItem>
+            )}
           </MenuPanel>
         </>
       ) : null}
     </div>
+  )
+}
+
+function PeopleIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="flex-none"
+    >
+      <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 7.5M18 14a6 6 0 0 1 4 7" />
+    </svg>
+  )
+}
+
+function LeaveIcon({ disabled }: { disabled?: boolean }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={disabled ? '#A9AAAF' : 'currentColor'}
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="flex-none"
+    >
+      <path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" />
+    </svg>
   )
 }
 

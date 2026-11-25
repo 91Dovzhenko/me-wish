@@ -3,6 +3,7 @@ import { Navigate, Outlet, Route, Routes } from 'react-router'
 import { useAuth } from './auth/AuthProvider.tsx'
 import AppLayout from './layout/AppLayout.tsx'
 import HomePage from './pages/HomePage.tsx'
+import InvitePage from './pages/InvitePage.tsx'
 import ListPage from './pages/ListPage.tsx'
 import LoginPage from './pages/LoginPage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
@@ -26,6 +27,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      {/* приглашение — и до входа (вход с карточкой приглашения), и после */}
+      <Route path="/i/:token" element={<InvitePage />} />
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router'
 import { useAuth } from '../auth/AuthProvider.tsx'
 import DecorWishCard from '../components/DecorWishCard.tsx'
@@ -12,7 +12,11 @@ import Logo from '../components/Logo.tsx'
 const TITLE = 'Все желания — в одном месте'
 const LEAD = 'Скриншот, название, цена — и желание сохранено. Делитесь списками с близкими.'
 
-export default function LoginPage() {
+/**
+ * invite — карточка приглашения (1.5 / 1.5D): на телефоне вместо декоративных карточек,
+ * на компьютере — над кнопками входа. После входа экран приглашения сам покажет «Принять».
+ */
+export default function LoginPage({ invite }: { invite?: ReactNode } = {}) {
   const {
     status,
     lastMethod,
@@ -36,7 +40,7 @@ export default function LoginPage() {
     if (status === 'signedOut' || status === 'error') prepareTelegram()
   }, [status, prepareTelegram])
 
-  if (status === 'signedIn') return <Navigate to="/" replace />
+  if (status === 'signedIn' && !invite) return <Navigate to="/" replace />
 
   const loading = status === 'exchanging' || status === 'initializing' || starting
   const error = status === 'error' && !starting
@@ -75,25 +79,33 @@ export default function LoginPage() {
               'radial-gradient(60% 55% at 70% 40%, rgba(185, 168, 255, 0.75), rgba(185, 168, 255, 0) 70%), radial-gradient(45% 40% at 20% 60%, rgba(200, 245, 106, 0.55), rgba(200, 245, 106, 0) 70%)',
           }}
         />
-        {/* Декоративные карточки: привязаны к низу области, на коротких экранах уходят вверх */}
-        <div aria-hidden="true" className="relative min-h-[300px] flex-1">
-          <div className="absolute bottom-16 left-[34px] w-[150px] -rotate-[7deg]">
-            <DecorWishCard
-              title="Штатив для камеры с видеоголовой"
-              price="11 990 ₽"
-              level={5}
-              art="tripod"
-            />
+        {invite ? (
+          <div className="relative flex min-h-[260px] flex-1 items-end px-5 pt-[calc(env(safe-area-inset-top)+40px)]">
+            {invite}
           </div>
-          <div className="absolute right-[30px] bottom-1 w-[150px] rotate-6">
-            <DecorWishCard
-              title="Очки солнцезащитные, чёрные"
-              price="1 290 ₽"
-              level={3}
-              art="glasses"
-            />
-          </div>
-        </div>
+        ) : (
+          <>
+            {/* Декоративные карточки: привязаны к низу области, на коротких экранах уходят вверх */}
+            <div aria-hidden="true" className="relative min-h-[300px] flex-1">
+              <div className="absolute bottom-16 left-[34px] w-[150px] -rotate-[7deg]">
+                <DecorWishCard
+                  title="Штатив для камеры с видеоголовой"
+                  price="11 990 ₽"
+                  level={5}
+                  art="tripod"
+                />
+              </div>
+              <div className="absolute right-[30px] bottom-1 w-[150px] rotate-6">
+                <DecorWishCard
+                  title="Очки солнцезащитные, чёрные"
+                  price="1 290 ₽"
+                  level={3}
+                  art="glasses"
+                />
+              </div>
+            </div>
+          </>
+        )}
         <div className="relative flex flex-col gap-3.5 px-6 pt-6 pb-[calc(env(safe-area-inset-bottom)+40px)]">
           <Logo size="login" />
           <h1 className="m-0 text-[28px] leading-[1.2] font-bold tracking-[-0.02em]">{TITLE}</h1>
@@ -139,6 +151,7 @@ export default function LoginPage() {
               {TITLE}
             </h1>
             <p className="m-0 mb-2.5 text-[17px] leading-[1.45] text-text-2">{LEAD}</p>
+            {invite}
             {actions}
           </div>
         </div>
