@@ -1,8 +1,9 @@
+import AvatarStack from '../components/AvatarStack.tsx'
 import Button from '../components/Button.tsx'
 import Cover from '../components/Cover.tsx'
 import { AlertIcon, CheckIcon, PlusIcon } from '../components/Icons.tsx'
 import { CoverSkeleton, SkeletonBlock } from '../components/Skeleton.tsx'
-import { useAppData, type Dashboard, type ListSummary } from '../data/AppData.tsx'
+import { useAppData, type Dashboard, type ListSection, type ListSummary } from '../data/AppData.tsx'
 import { useListActions } from '../features/lists/ListActions.tsx'
 import { useWishActions } from '../features/wishes/WishActions.tsx'
 import MobileHeader from '../layout/MobileHeader.tsx'
@@ -17,6 +18,12 @@ export default function HomePage() {
   const { openCreate } = useListActions()
   const { openAdd } = useWishActions()
   const ready = data.status === 'ready'
+  const lists = ready ? data.lists : []
+  const byS: Record<ListSection, ListSummary[]> = {
+    mine: lists.filter((l) => l.section === 'mine'),
+    shared: lists.filter((l) => l.section === 'shared'),
+    viewer: lists.filter((l) => l.section === 'viewer'),
+  }
   const firstRun =
     ready &&
     data.dashboard.activeCount + data.dashboard.doneCount === 0 &&
@@ -65,10 +72,10 @@ export default function HomePage() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] lg:gap-4">
+            <div className={GRID}>
               {ready ? (
                 <>
-                  {data.lists.map((l) => (
+                  {byS.mine.map((l) => (
                     <ListCover key={l.id} list={l} />
                   ))}
                   {firstRun ? (
@@ -83,6 +90,22 @@ export default function HomePage() {
             {firstRun ? (
               <StartCard className="mt-1.5 flex lg:hidden" onAdd={() => openAdd()} />
             ) : null}
+
+            {/* Разделы D-114 / D-123: пустые скрыты */}
+            {(['shared', 'viewer'] as const).map((sec) =>
+              byS[sec].length > 0 ? (
+                <div key={sec} className="flex flex-col gap-4 lg:gap-3.5">
+                  <h2 className="mt-2 px-1 text-xl font-bold tracking-[-0.01em] lg:mt-3 lg:p-0">
+                    {SECTION_TITLE[sec]}
+                  </h2>
+                  <div className={GRID}>
+                    {byS[sec].map((l) => (
+                      <ListCover key={l.id} list={l} small />
+                    ))}
+                  </div>
+                </div>
+              ) : null,
+            )}
           </section>
         )}
       </main>
@@ -100,10 +123,22 @@ export default function HomePage() {
   )
 }
 
-function ListCover({ list }: { list: ListSummary }) {
+const GRID = 'grid grid-cols-2 gap-3 lg:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] lg:gap-4'
+
+const SECTION_TITLE: Record<ListSection, string> = {
+  mine: 'Мои списки',
+  shared: 'Совместные',
+  viewer: 'Со мной поделились',
+}
+
+function ListCover({ list, small }: { list: ListSummary; small?: boolean }) {
   const urls = usePhotoUrls(list.coverMode === 'collage' ? list.coverPhotos : [])
   return (
     <Cover
+      heightClass={small ? 'h-[120px] lg:h-[160px]' : undefined}
+      members={
+        list.members.length > 1 ? <AvatarStack people={list.members} size={22} /> : undefined
+      }
       // пока ссылка не получена — пустая плитка коллажа (без «прыжка» с иконки на фото)
       photos={list.coverPhotos.map((p) => urls[p] ?? '')}
       title={list.title}

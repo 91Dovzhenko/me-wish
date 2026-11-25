@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { listColorVars, type ListColor, type ListIconName } from '../lib/listStyle.ts'
 import ListIcon from './ListIcon.tsx'
@@ -17,6 +18,8 @@ type Props = {
   to?: string
   /** классы высоты обложки, по умолчанию телефон 132 / компьютер 180 */
   heightClass?: string
+  /** аватары участников справа внизу (список, где больше одного участника — D-123) */
+  members?: ReactNode
 }
 
 /**
@@ -34,6 +37,7 @@ export default function Cover({
   photos = [],
   to,
   heightClass = 'h-[132px] lg:h-[180px]',
+  members,
 }: Props) {
   const pics = coverMode === 'collage' ? photos.slice(0, 4) : []
   const n = pics.length
@@ -74,6 +78,7 @@ export default function Cover({
             <ListIcon icon={icon} color={color} size={26} box={52} />
           </div>
         )}
+        {members ? <span className="absolute right-2 bottom-2 inline-flex">{members}</span> : null}
         {date ? (
           <span className="absolute top-2 left-2 rounded-full bg-surface px-[9px] py-1 text-[11px] font-bold whitespace-nowrap shadow-label">
             {date}

@@ -37,9 +37,24 @@ export type TrashItem = {
   listId: string
   listTitle: string
   listAlive: boolean
+  /** в списке есть другие участники — «Очистить» удалит и у них (D-122) */
+  listShared: boolean
   deletedAt: string
   addedAt: string
+  /** кто удалил, если не я (004-b) */
+  deletedBy: Person | null
 }
+
+/** Имя и аватар человека (из profiles_public). */
+export type Person = {
+  userId: string
+  name: string
+  avatarUrl: string | null
+  avatarPath: string | null
+}
+
+/** Раздел главной и бокового меню (D-114, D-123). */
+export type ListSection = 'mine' | 'shared' | 'viewer'
 
 export type CoverMode = 'collage' | 'icon'
 
@@ -65,6 +80,8 @@ export type WishItem = {
   completedAt: string | null
   priority: number
   addedAt: string
+  /** кто добавил (list_items.added_by); имя — из участников, null для неизвестных */
+  addedBy: Person | null
 }
 
 /** Роль в списке (DOMAIN §4). */
@@ -110,6 +127,8 @@ export type ListSummary = {
   myRole: ListRole
   /** участники: сначала я, затем по дате вступления */
   members: Member[]
+  /** «Мои списки» (я единственный редактор), «Совместные» (есть ещё редактор), «Со мной поделились» (я зритель) */
+  section: ListSection
 }
 
 /** Поля формы списка (создание и настройки). */
@@ -149,7 +168,7 @@ export type LiveStatus = 'connecting' | 'live' | 'offline'
 
 type ListMeta = Omit<
   ListSummary,
-  'itemCount' | 'totalPrice' | 'activeCount' | 'doneCount' | 'doneSum' | 'coverPhotos'
+  'itemCount' | 'totalPrice' | 'activeCount' | 'doneCount' | 'doneSum' | 'coverPhotos' | 'section'
 >
 
 /** Снимок данных пользователя: всё, что на экране, считается из него (сводки не расходятся с сеткой). */
@@ -246,6 +265,11 @@ function toRow(f: ListFields) {
 }
 
 type TrashRow = {
+  list_shared: boolean
+  deleted_by: string | null
+  deleted_by_name: string | null
+  deleted_by_avatar_url: string | null
+  deleted_by_avatar_path: string | null
   item_id: string
   wish_id: string
   title: string
@@ -260,6 +284,7 @@ type TrashRow = {
 type ItemRow = {
   id: string
   list_id: string
+  added_by: string | null
   priority: number
   added_at: string
   wish: {
@@ -294,7 +319,7 @@ async function load(userId: string): Promise<Snapshot> {
     db
       .from('list_items')
       .select(
-        'id, list_id, priority, added_at, wish:wishes!inner(id, title, price, image_path, source_url, description, status, completed_at)',
+        'id, list_id, priority, added_at, added_by, wish:wishes!inner(id, title, price, image_path, source_url, description, status, completed_at)',
       )
       .is('deleted_at', null)
       .order('added_at', { ascending: false })
@@ -370,6 +395,7 @@ async function load(userId: string): Promise<Snapshot> {
       completedAt: r.wish!.completed_at,
       priority: r.priority,
       addedAt: r.added_at,
+      addedBy: r.added_by ? toPerson(r.added_by, people.get(r.added_by)) : null,
     }))
   return {
     profile: {
@@ -390,10 +416,34 @@ async function load(userId: string): Promise<Snapshot> {
       listId: t.list_id,
       listTitle: t.list_title,
       listAlive: t.list_alive,
+      listShared: t.list_shared,
       deletedAt: t.deleted_at,
       addedAt: t.added_at,
+      deletedBy: t.deleted_by
+        ? {
+            userId: t.deleted_by,
+            name: t.deleted_by_name || 'Участник',
+            avatarUrl: t.deleted_by_avatar_url,
+            avatarPath: t.deleted_by_avatar_path,
+          }
+        : null,
     })),
   }
+}
+
+function toPerson(userId: string, pp: PublicProfile | undefined): Person {
+  return {
+    userId,
+    name: pp?.display_name || 'Участник',
+    avatarUrl: pp?.avatar_url ?? null,
+    avatarPath: pp?.avatar_path ?? null,
+  }
+}
+
+/** Раздел списка по составу: зритель → «Со мной поделились»; есть ещё редактор → «Совместные». */
+function sectionOf(l: { myRole: ListRole; members: Member[] }): ListSection {
+  if (l.myRole === 'viewer') return 'viewer'
+  return l.members.some((m) => !m.isMe && m.role === 'editor') ? 'shared' : 'mine'
 }
 
 /** Новые первыми; при равной дате — по id (как в базе). */
@@ -443,6 +493,7 @@ function derive(s: Snapshot): Omit<Ready, 'status' | 'profile'> {
       doneCount,
       doneSum,
       coverPhotos,
+      section: sectionOf(l),
     }
   })
 
@@ -455,7 +506,10 @@ function derive(s: Snapshot): Omit<Ready, 'status' | 'profile'> {
     doneCount: 0,
     doneSum: 0,
   }
+  // сводка — по спискам, где я редактор (мои и совместные), без «Со мной поделились» (D-117)
+  const editorLists = new Set(s.lists.filter((l) => l.myRole === 'editor').map((l) => l.id))
   for (const it of s.items) {
+    if (!editorLists.has(it.listId)) continue
     if (seen.has(it.wishId)) continue
     seen.add(it.wishId)
     if (!isDone(it.status)) {
@@ -838,8 +892,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
                     listId: it.listId,
                     listTitle: list.title,
                     listAlive: true,
+                    listShared: list.members.length > 1,
                     deletedAt: new Date().toISOString(),
                     addedAt: it.addedAt,
+                    deletedBy: null,
                   },
                 ]
               : []

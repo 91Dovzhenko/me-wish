@@ -4,11 +4,13 @@ import FormWindow from '../../components/FormWindow.tsx'
 import { Heart } from '../../components/Hearts.tsx'
 import { CheckIcon, ChevronDownIcon } from '../../components/Icons.tsx'
 import ImageCropper from '../../components/ImageCropper.tsx'
+import AvatarStack from '../../components/AvatarStack.tsx'
 import ListIcon from '../../components/ListIcon.tsx'
 import { useDismiss } from '../../components/Menu.tsx'
+import Sheet from '../../components/Sheet.tsx'
 import TextField from '../../components/TextField.tsx'
 import { SAVE_ERROR, useToast } from '../../components/Toast.tsx'
-import type { ListSummary, NewWish, WishFields } from '../../data/AppData.tsx'
+import { useAppData, type ListSummary, type NewWish, type WishFields } from '../../data/AppData.tsx'
 import { useIsDesktop } from '../../hooks/useIsDesktop.ts'
 import { firstImageFile } from '../../lib/image.ts'
 import { rememberLocalPhoto, removePhoto, usePhotoUrls } from '../../lib/photos.ts'
@@ -584,14 +586,78 @@ function ListPicker({
   fromListId: string | null
   compact: boolean
 }) {
+  const data = useAppData()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
-  useDismiss(rootRef, open, () => setOpen(false))
+  useDismiss(rootRef, open && compact, () => setOpen(false))
   const current = lists.find((l) => l.id === value) ?? lists[0]
   const note = (id: string) =>
     id === fromListId ? 'Этот список' : id === defaultListId ? 'По умолчанию' : ''
+  // 3.14: только списки, где я редактор; «Мои списки» и «Совместные»
+  const mine = lists.filter((l) => l.section !== 'shared')
+  const shared = lists.filter((l) => l.section === 'shared')
+  const hasViewerLists = data.status === 'ready' && data.lists.some((l) => l.myRole === 'viewer')
 
   if (!current) return null
+
+  const option = (l: ListSummary) => {
+    const on = l.id === current.id
+    return (
+      <button
+        key={l.id}
+        type="button"
+        role="option"
+        aria-selected={on}
+        onClick={() => {
+          onChange(l.id)
+          setOpen(false)
+        }}
+        className={`flex flex-none cursor-pointer items-center gap-2.5 text-left ${
+          compact ? 'h-[46px] rounded-item px-2' : 'h-[54px] gap-3 rounded-[16px] pr-3 pl-2.5'
+        } ${on ? 'bg-bg' : 'hover:bg-bg'}`}
+      >
+        <ListIcon icon={l.icon} color={l.color} size={compact ? 15 : 16} box={compact ? 30 : 34} />
+        <span
+          className={`min-w-0 flex-1 truncate font-semibold ${compact ? 'text-sm' : 'text-[15px]'}`}
+        >
+          {l.title}
+        </span>
+        {l.members.length > 1 ? <AvatarStack people={l.members} size={20} /> : null}
+        {note(l.id) ? <span className="flex-none text-xs text-text-2">{note(l.id)}</span> : null}
+        {on ? (
+          <CheckIcon size={compact ? 16 : 18} className="flex-none" />
+        ) : (
+          <span className={`flex-none ${compact ? 'w-4' : 'w-[18px]'}`} />
+        )}
+      </button>
+    )
+  }
+  const label = (text: string, first?: boolean) => (
+    <span
+      className={`mx-1.5 flex-none text-xs font-bold tracking-[0.04em] text-text-2 uppercase ${
+        first ? 'mt-1' : 'mt-2.5'
+      }`}
+    >
+      {text}
+    </span>
+  )
+  const options =
+    shared.length === 0 ? (
+      lists.map(option)
+    ) : (
+      <>
+        {label('Мои списки', true)}
+        {mine.map(option)}
+        {label('Совместные')}
+        {shared.map(option)}
+      </>
+    )
+  const footnote = hasViewerLists ? (
+    <span className="mx-1.5 mt-2 flex-none text-xs text-[#6b6d73]">
+      Списки, где вы зритель, сюда не попадают
+    </span>
+  ) : null
+
   return (
     <div ref={rootRef} className="relative flex flex-col gap-1.5">
       <span id="wish-list-label" className="text-[13px] font-semibold">
@@ -619,49 +685,33 @@ function ListPicker({
         >
           {current.title}
         </span>
+        {!compact && current.members.length > 1 ? (
+          <AvatarStack people={current.members} size={20} />
+        ) : null}
         {!compact && note(current.id) ? (
           <span className="flex-none text-xs text-text-2">{note(current.id)}</span>
         ) : null}
         <ChevronDownIcon size={compact ? 14 : 16} className="flex-none" />
       </button>
-      {open ? (
+      {open && compact ? (
         <div
           role="listbox"
           aria-labelledby="wish-list-label"
-          className="pop-in absolute bottom-full left-0 z-20 mb-2 flex max-h-[300px] w-full min-w-[260px] flex-col overflow-y-auto rounded-[20px] bg-surface p-1.5 shadow-[0_16px_40px_rgba(23,24,28,0.18),0_0_0_1px_var(--divider)] lg:rounded-[18px]"
+          className="pop-in absolute bottom-full left-0 z-20 mb-2 flex max-h-[340px] w-full min-w-[280px] flex-col overflow-y-auto rounded-[18px] bg-surface p-1.5 shadow-[0_16px_40px_rgba(23,24,28,0.18),0_0_0_1px_var(--divider)]"
         >
-          {lists.map((l) => {
-            const on = l.id === current.id
-            return (
-              <button
-                key={l.id}
-                type="button"
-                role="option"
-                aria-selected={on}
-                onClick={() => {
-                  onChange(l.id)
-                  setOpen(false)
-                }}
-                className={`flex h-[50px] flex-none cursor-pointer items-center gap-2.5 rounded-[14px] px-2 text-left lg:h-[46px] lg:rounded-item ${
-                  on ? 'bg-bg' : 'hover:bg-bg'
-                }`}
-              >
-                <ListIcon icon={l.icon} color={l.color} size={15} box={30} />
-                <span className="min-w-0 flex-1 truncate text-[15px] font-semibold lg:text-sm">
-                  {l.title}
-                </span>
-                {note(l.id) ? (
-                  <span className="flex-none text-xs text-text-2">{note(l.id)}</span>
-                ) : null}
-                {on ? (
-                  <CheckIcon size={16} className="flex-none" />
-                ) : (
-                  <span className="w-4 flex-none" />
-                )}
-              </button>
-            )
-          })}
+          {options}
+          {footnote}
         </div>
+      ) : null}
+      {open && !compact ? (
+        // телефон: шторка «В какой список» (3.14)
+        <Sheet label="В какой список" onClose={() => setOpen(false)} className="gap-1.5">
+          <h2 className="mx-1 mt-2 mb-0.5 text-lg font-bold">В какой список</h2>
+          <div role="listbox" aria-label="В какой список" className="flex flex-col gap-1.5">
+            {options}
+          </div>
+          {footnote}
+        </Sheet>
       ) : null}
     </div>
   )

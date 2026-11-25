@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useNavigate } from 'react-router'
 import Dialog from '../../components/Dialog.tsx'
 import { SAVE_ERROR, useToast } from '../../components/Toast.tsx'
@@ -42,6 +50,18 @@ export function ListActionsProvider({ children }: { children: ReactNode }) {
     membersOf && data.status === 'ready'
       ? (data.lists.find((l) => l.id === membersOf) ?? null)
       : null
+
+  // настройки списка открыты, а меня там сделали зрителем — закрыть с тостом (004-b)
+  const editRole =
+    form?.mode === 'edit' && data.status === 'ready'
+      ? data.lists.find((l) => l.id === form.list.id)?.myRole
+      : undefined
+  useEffect(() => {
+    if (editRole !== 'viewer') return
+    toast({ text: 'Вас сделали зрителем' })
+    const t = window.setTimeout(() => setForm(null), 0)
+    return () => window.clearTimeout(t)
+  }, [editRole, toast])
 
   const openCreate = useCallback(() => setForm({ mode: 'create' }), [])
   const openEdit = useCallback((list: ListSummary) => setForm({ mode: 'edit', list }), [])

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router'
+import Avatar from '../components/Avatar.tsx'
 import Dialog from '../components/Dialog.tsx'
 import { BackIcon, CheckIcon, ChevronDownIcon } from '../components/Icons.tsx'
 import ListIcon from '../components/ListIcon.tsx'
@@ -9,7 +10,7 @@ import { SAVE_ERROR, useToast } from '../components/Toast.tsx'
 import { PhotoSquare } from '../components/WishCard.tsx'
 import { useAppData, type ListSummary, type TrashItem } from '../data/AppData.tsx'
 import { plural, trashDaysLeft } from '../lib/format.ts'
-import { usePhotoUrls } from '../lib/photos.ts'
+import { AVATAR_BUCKET, usePhotoUrls } from '../lib/photos.ts'
 
 const TrashBinIcon = ({ size }: { size: number }) => (
   <svg
@@ -40,6 +41,10 @@ export default function TrashPage() {
   const ready = data.status === 'ready'
   const trash = ready ? data.trash : []
   const urls = usePhotoUrls(trash.map((t) => t.imagePath))
+  const avatarUrls = usePhotoUrls(
+    trash.map((t) => t.deletedBy?.avatarPath),
+    AVATAR_BUCKET,
+  )
   const hasItems = ready && trash.length > 0
 
   const restore = (t: TrashItem, listId?: string) => {
@@ -132,8 +137,31 @@ export default function TrashPage() {
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-[3px] lg:gap-1">
                 <span className="truncate text-sm font-semibold lg:text-[15px]">{t.title}</span>
-                <span className="text-xs text-text-2 lg:text-[13px]">
-                  Из «{t.listTitle}» · удалится через {trashDaysLeft(t.deletedAt)} дн.
+                {/* удалил другой редактор совместного списка — с именем и аватаром (5.7; без рода — D-121) */}
+                <span className="flex items-center gap-1.5 text-xs leading-[1.35] text-text-2 lg:text-[13px]">
+                  {t.deletedBy ? (
+                    <>
+                      <Avatar
+                        name={t.deletedBy.name}
+                        src={
+                          t.deletedBy.avatarPath
+                            ? (avatarUrls[t.deletedBy.avatarPath] ?? null)
+                            : t.deletedBy.avatarUrl
+                        }
+                        size={16}
+                        tone={t.deletedBy.userId}
+                        className="self-start lg:mt-px"
+                      />
+                      <span className="min-w-0">
+                        {t.deletedBy.name} · удалено из «{t.listTitle}» · удалится через{' '}
+                        {trashDaysLeft(t.deletedAt)} дн.
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Из «{t.listTitle}» · удалится через {trashDaysLeft(t.deletedAt)} дн.
+                    </>
+                  )}
                 </span>
               </div>
               <button
@@ -161,7 +189,7 @@ export default function TrashPage() {
       {restoring && data.status === 'ready' ? (
         <RestoreDialog
           item={restoring}
-          lists={data.lists}
+          lists={data.lists.filter((l) => l.myRole === 'editor')}
           defaultListId={data.profile.defaultListId}
           onCancel={() => setRestoring(null)}
           onRestore={(listId) => restore(restoring, listId)}
@@ -171,7 +199,11 @@ export default function TrashPage() {
       {askClear ? (
         <Dialog
           title={`Удалить навсегда ${n} ${plural(n, ['желание', 'желания', 'желаний'])}?`}
-          body={n === 1 ? 'Восстановить его будет нельзя.' : 'Восстановить их будет нельзя.'}
+          body={`${n === 1 ? 'Восстановить его будет нельзя.' : 'Восстановить их будет нельзя.'}${
+            trash.some((t) => askClear.includes(t.itemId) && t.listShared)
+              ? ' Желания из совместных списков удалятся и у других участников.'
+              : ''
+          }`}
           primary="Удалить"
           secondary="Отмена"
           onPrimary={() => clear(askClear)}

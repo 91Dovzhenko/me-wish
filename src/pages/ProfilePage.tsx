@@ -10,6 +10,7 @@ import {
   EditIcon,
   TelegramIcon,
 } from '../components/Icons.tsx'
+import AvatarStack from '../components/AvatarStack.tsx'
 import ImageCropper from '../components/ImageCropper.tsx'
 import ListIcon from '../components/ListIcon.tsx'
 import { useDismiss } from '../components/Menu.tsx'
@@ -541,28 +542,32 @@ function DefaultListSheet({ onClose }: { onClose: () => void }) {
         Сюда попадают желания, добавленные с главной и через бота
       </p>
       <div role="radiogroup" aria-label="Список по умолчанию" className="flex flex-col gap-1.5">
-        {data.lists.map((l) => {
-          const on = l.id === data.profile.defaultListId
-          return (
-            <button
-              key={l.id}
-              type="button"
-              role="radio"
-              aria-checked={on}
-              onClick={() => {
-                setDefault(l)
-                onClose()
-              }}
-              className={`flex h-14 flex-none cursor-pointer items-center gap-3 rounded-[16px] pr-3 pl-2.5 text-left ${
-                on ? 'bg-bg' : 'hover:bg-bg'
-              }`}
-            >
-              <ListIcon icon={l.icon} color={l.color} size={16} box={34} />
-              <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">{l.title}</span>
-              {on ? <CheckIcon size={18} strokeWidth={2.4} className="flex-none" /> : null}
-            </button>
-          )
-        })}
+        {/* 5.6: только списки, где я редактор (мои и совместные, D-117) */}
+        {data.lists
+          .filter((l) => l.myRole === 'editor')
+          .map((l) => {
+            const on = l.id === data.profile.defaultListId
+            return (
+              <button
+                key={l.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => {
+                  setDefault(l)
+                  onClose()
+                }}
+                className={`flex h-14 flex-none cursor-pointer items-center gap-3 rounded-[16px] pr-3 pl-2.5 text-left ${
+                  on ? 'bg-bg' : 'hover:bg-bg'
+                }`}
+              >
+                <ListIcon icon={l.icon} color={l.color} size={16} box={34} />
+                <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">{l.title}</span>
+                {l.members.length > 1 ? <AvatarStack people={l.members} size={20} /> : null}
+                {on ? <CheckIcon size={18} strokeWidth={2.4} className="flex-none" /> : null}
+              </button>
+            )
+          })}
       </div>
     </Sheet>
   )
@@ -616,28 +621,31 @@ function DefaultListDesktop() {
             aria-label="Список по умолчанию"
             className="pop-in absolute top-[74px] right-5 z-10 flex max-h-[320px] w-[260px] flex-col overflow-y-auto rounded-[18px] bg-surface p-1.5 shadow-[0_16px_40px_rgba(23,24,28,0.18),0_0_0_1px_var(--divider)]"
           >
-            {data.lists.map((l) => {
-              const on = l.id === data.profile.defaultListId
-              return (
-                <button
-                  key={l.id}
-                  type="button"
-                  role="option"
-                  aria-selected={on}
-                  onClick={() => {
-                    setDefault(l)
-                    setOpen(false)
-                  }}
-                  className={`flex h-12 flex-none cursor-pointer items-center gap-2.5 rounded-item pr-2.5 pl-2 text-left ${
-                    on ? 'bg-bg' : 'hover:bg-bg'
-                  }`}
-                >
-                  <ListIcon icon={l.icon} color={l.color} size={15} box={30} />
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">{l.title}</span>
-                  {on ? <CheckIcon size={16} strokeWidth={2.4} className="flex-none" /> : null}
-                </button>
-              )
-            })}
+            {data.lists
+              .filter((l) => l.myRole === 'editor')
+              .map((l) => {
+                const on = l.id === data.profile.defaultListId
+                return (
+                  <button
+                    key={l.id}
+                    type="button"
+                    role="option"
+                    aria-selected={on}
+                    onClick={() => {
+                      setDefault(l)
+                      setOpen(false)
+                    }}
+                    className={`flex h-12 flex-none cursor-pointer items-center gap-2.5 rounded-item pr-2.5 pl-2 text-left ${
+                      on ? 'bg-bg' : 'hover:bg-bg'
+                    }`}
+                  >
+                    <ListIcon icon={l.icon} color={l.color} size={15} box={30} />
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold">{l.title}</span>
+                    {l.members.length > 1 ? <AvatarStack people={l.members} size={18} /> : null}
+                    {on ? <CheckIcon size={16} strokeWidth={2.4} className="flex-none" /> : null}
+                  </button>
+                )
+              })}
           </div>
         ) : null}
       </div>

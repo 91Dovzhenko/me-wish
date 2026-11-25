@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useNavigate } from 'react-router'
 import { useToast } from '../../components/Toast.tsx'
 import { useAppData } from '../../data/AppData.tsx'
@@ -33,9 +41,24 @@ export function WishActionsProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({ openAdd, canAdd: ready }), [openAdd, ready])
 
+  // форма открыта из списка, а меня там сделали зрителем — закрыть с тостом (004-b)
+  const fromRole =
+    form?.fromListId && data.status === 'ready'
+      ? data.lists.find((l) => l.id === form.fromListId)?.myRole
+      : undefined
+  useEffect(() => {
+    if (fromRole !== 'viewer') return
+    toast({ text: 'Вас сделали зрителем' })
+    const t = window.setTimeout(() => setForm(null), 0)
+    return () => window.clearTimeout(t)
+  }, [fromRole, toast])
+
   let formNode: ReactNode = null
-  if (form && data.status === 'ready' && data.lists.length > 0) {
-    const { lists, profile } = data
+  // добавить можно только в списки, где я редактор (004-b): зрительские не предлагаются
+  const editorLists = data.status === 'ready' ? data.lists.filter((l) => l.myRole === 'editor') : []
+  if (form && data.status === 'ready' && editorLists.length > 0) {
+    const { profile } = data
+    const lists = editorLists
     const alive = (id: string | null) => (id && lists.some((l) => l.id === id) ? id : null)
     const fromListId = alive(form.fromListId)
     const initialListId = fromListId ?? alive(profile.defaultListId) ?? lists[0]!.id

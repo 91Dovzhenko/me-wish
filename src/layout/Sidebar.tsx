@@ -9,11 +9,12 @@ import {
   TrashIcon,
   UserIcon,
 } from '../components/Icons.tsx'
+import AvatarStack from '../components/AvatarStack.tsx'
 import ListIcon from '../components/ListIcon.tsx'
 import Logo from '../components/Logo.tsx'
 import ProfileAvatar from '../components/ProfileAvatar.tsx'
 import { SkeletonBlock } from '../components/Skeleton.tsx'
-import { useAppData } from '../data/AppData.tsx'
+import { useAppData, type ListSection, type ListSummary } from '../data/AppData.tsx'
 import { useListActions } from '../features/lists/ListActions.tsx'
 import { firstName } from '../lib/format.ts'
 
@@ -96,22 +97,23 @@ function SidebarLists() {
         className="flex min-h-0 flex-col gap-0.5 overflow-y-auto overscroll-contain"
       >
         {data.status === 'ready'
-          ? data.lists.map((l) => (
-              <NavLink
-                key={l.id}
-                to={`/l/${l.id}`}
-                title={l.title}
-                className={({ isActive }) =>
-                  `flex h-11 flex-none items-center gap-2.5 rounded-item px-2.5 text-[15px] transition-colors ${
-                    isActive ? 'bg-accent font-semibold' : 'font-medium hover:bg-bg'
-                  }`
-                }
-              >
-                <ListIcon icon={l.icon} color={l.color} size={15} box={28} />
-                <span className="min-w-0 flex-1 truncate">{l.title}</span>
-                <span className="text-[13px] text-text-2">{l.itemCount}</span>
-              </NavLink>
-            ))
+          ? SECTIONS.map(({ key, title }) => {
+              const ls = data.lists.filter((l) => l.section === key)
+              if (ls.length === 0) return null
+              return (
+                <div key={key} className="flex flex-none flex-col gap-0.5">
+                  {/* «Мои списки» — подзаголовок над прокруткой; остальные разделы — здесь (Sidebar.dc, sections) */}
+                  {key !== 'mine' ? (
+                    <span className="px-3 pt-3.5 pb-1.5 text-xs font-bold tracking-[0.04em] text-text-2 uppercase">
+                      {title}
+                    </span>
+                  ) : null}
+                  {ls.map((l) => (
+                    <SidebarRow key={l.id} list={l} />
+                  ))}
+                </div>
+              )
+            })
           : [0, 1, 2].map((i) => (
               <div
                 key={i}
@@ -130,6 +132,55 @@ function SidebarLists() {
         }`}
       />
     </div>
+  )
+}
+
+const SECTIONS: { key: ListSection; title: string }[] = [
+  { key: 'mine', title: 'Мои списки' },
+  { key: 'shared', title: 'Совместные' },
+  { key: 'viewer', title: 'Со мной поделились' },
+]
+
+/** Строка списка: «Мои» — число желаний, «Совместные» — аватары, «Со мной поделились» — глаз. */
+function SidebarRow({ list: l }: { list: ListSummary }) {
+  return (
+    <NavLink
+      to={`/l/${l.id}`}
+      title={l.title}
+      className={({ isActive }) =>
+        `flex h-11 flex-none items-center gap-2.5 rounded-item px-2.5 text-[15px] transition-colors ${
+          isActive ? 'bg-accent font-semibold' : 'font-medium hover:bg-bg'
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <ListIcon icon={l.icon} color={l.color} size={15} box={28} />
+          <span className="min-w-0 flex-1 truncate">{l.title}</span>
+          {l.section === 'viewer' ? (
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8A8B90"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-label="только просмотр"
+              className="flex-none"
+            >
+              <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          ) : l.members.length > 1 ? (
+            <AvatarStack people={l.members} size={18} ring={isActive ? '#C8F56A' : '#FFFFFF'} />
+          ) : (
+            <span className="text-[13px] text-text-2">{l.itemCount}</span>
+          )}
+        </>
+      )}
+    </NavLink>
   )
 }
 

@@ -24,6 +24,12 @@ export default function AppLayout() {
                 <Sidebar />
               </div>
               <div className="min-w-0 flex-1">
+                {/* Подложка под строку состояния iPhone (viewport-fit=cover): при прокрутке заголовки
+                    уходят под неё, а не под часы и значки сети (004-b, баг из проверки 004-a) */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none fixed inset-x-0 top-0 z-[35] h-[env(safe-area-inset-top)] bg-bg lg:hidden"
+                />
                 <OfflineBanner />
                 <Outlet />
               </div>

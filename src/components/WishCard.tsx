@@ -10,6 +10,8 @@ type Props = {
   photoUrl: string | null | undefined
   priority: number
   status: 'active' | 'booked' | 'purchased' | 'gifted'
+  /** мини-аватар того, кто добавил (совместный список, D-115) */
+  author?: React.ReactNode
 }
 
 /**
@@ -17,7 +19,7 @@ type Props = {
  * Квадрат фото → цена (или «Без цены») → название до 2 строк → сердечки; у «Очень хочу» и «Мечта» — лаймовая метка.
  * Белая на сером фоне, без рамки (Desktop-List, D-103). Нажатие открывает карточку (ссылка — в ListPage).
  */
-export default function WishCard({ title, price, photoUrl, priority, status }: Props) {
+export default function WishCard({ title, price, photoUrl, priority, status, author }: Props) {
   const isDone = status === 'purchased' || status === 'gifted'
   const hot = !isDone && priority >= 4
   return (
@@ -32,6 +34,12 @@ export default function WishCard({ title, price, photoUrl, priority, status }: P
         {hot ? (
           <span className="absolute top-1.5 left-1.5 rounded-full bg-accent px-2 py-[3px] text-[11px] font-bold whitespace-nowrap text-text">
             {priorityLabel(priority)}
+          </span>
+        ) : null}
+        {/* кто добавил — в совместном списке (WishCard.dc, by), справа внизу фото */}
+        {author ? (
+          <span className="absolute right-1.5 bottom-1.5 inline-flex rounded-full shadow-[0_0_0_2px_#fff]">
+            {author}
           </span>
         ) : null}
         {isDone ? (

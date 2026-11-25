@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import Avatar from '../components/Avatar.tsx'
+import AvatarStack from '../components/AvatarStack.tsx'
 import Button from '../components/Button.tsx'
 import {
   BackIcon,
@@ -26,7 +28,7 @@ import { SORT_OPTIONS, sortItems, useListSort, type SortKey } from '../features/
 import { useWishActions } from '../features/wishes/WishActions.tsx'
 import WishSheet from '../features/wishes/WishSheet.tsx'
 import { countSum, formatRub } from '../lib/format.ts'
-import { usePhotoUrls } from '../lib/photos.ts'
+import { AVATAR_BUCKET, usePhotoUrls } from '../lib/photos.ts'
 import NotFoundPage from './NotFoundPage.tsx'
 
 // Экран списка: Mobile-List / Mobile-List-Compact / Mobile-List-Empty / Mobile-List-Loading,
@@ -87,7 +89,24 @@ function ListView({
   const navigate = useNavigate()
   const location = useLocation()
   const { openAdd } = useWishActions()
+  const { openMembers } = useListActions()
   const add = () => openAdd({ listId: list.id })
+  const canEdit = list.myRole === 'editor'
+  const shared = list.members.length > 1
+  const people = (
+    <button
+      type="button"
+      onClick={() => openMembers(list)}
+      className="flex h-11 flex-none cursor-pointer items-center px-0.5 lg:px-1"
+    >
+      <span className="lg:hidden">
+        <AvatarStack people={list.members} size={28} ring="#F4F4EF" />
+      </span>
+      <span className="hidden lg:inline-flex">
+        <AvatarStack people={list.members} size={30} ring="#F4F4EF" />
+      </span>
+    </button>
+  )
   const [sort, setSort] = useListSort(list.id)
   const [showDone, setShowDone] = useState(true)
 
@@ -142,7 +161,7 @@ function ListView({
         </header>
 
         <div className="flex items-start justify-between gap-4">
-          <div className="flex min-w-0 flex-col gap-1.5 px-1 lg:gap-2 lg:px-0">
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5 px-1 lg:gap-2 lg:px-0">
             <div className="flex min-w-0 items-center gap-2.5 lg:gap-3">
               <span className="lg:hidden">
                 <ListIcon icon={list.icon} color={list.color} size={17} box={32} />
@@ -153,16 +172,19 @@ function ListView({
               <h1 className="m-0 min-w-0 truncate font-display text-2xl font-semibold tracking-[-0.03em] lg:text-[30px]">
                 {list.title}
               </h1>
+              {/* Аватары участников — нажатие открывает «Участники» (2.17 / 2.17D) */}
+              {shared ? <span className="ml-auto flex-none lg:ml-0">{people}</span> : null}
               <div className="hidden flex-none lg:block">
                 <ListMenu list={list} isLast={isLast} />
               </div>
             </div>
+            {!canEdit ? <ViewerBadge /> : null}
             {list.description ? (
               <p className="m-0 text-sm text-text-2 lg:text-[15px]">{list.description}</p>
             ) : null}
             {hasItems ? <ListSummaryLine list={list} /> : null}
           </div>
-          <div className="hidden flex-none lg:block">
+          <div className={canEdit ? 'hidden flex-none lg:block' : 'hidden'}>
             <Button
               variant="primary"
               onClick={add}
@@ -183,7 +205,7 @@ function ListView({
               onToggleDone={() => setShowDone((v) => !v)}
             />
             {active.length > 0 ? (
-              <WishGrid items={active} listId={list.id} label="Желания" />
+              <WishGrid items={active} listId={list.id} label="Желания" authors={shared} />
             ) : (
               <AllDoneNote />
             )}
@@ -195,16 +217,16 @@ function ListView({
                 >
                   Исполнено <span className="font-medium text-text-2">· {done.length}</span>
                 </h2>
-                <WishGrid items={done} listId={list.id} label="Исполнено" />
+                <WishGrid items={done} listId={list.id} label="Исполнено" authors={shared} />
               </section>
             ) : null}
           </>
         ) : (
-          <EmptyState list={list} onAdd={add} />
+          <EmptyState list={list} onAdd={canEdit ? add : undefined} />
         )}
       </main>
 
-      <AddFab onClick={add} />
+      {canEdit ? <AddFab onClick={add} /> : null}
 
       {cardItem && !vanished ? <WishSheet item={cardItem} list={list} onClose={closeCard} /> : null}
     </>
@@ -365,7 +387,30 @@ function ListChips({
 }
 
 /** «Здесь пока пусто» — Mobile-List-Empty / Desktop-List-Empty. */
-function EmptyState({ list, onAdd }: { list: ListSummary; onAdd: () => void }) {
+/** «Вы зритель — только просмотр» (2.19). */
+function ViewerBadge() {
+  return (
+    <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-surface px-2.5 py-1 text-xs font-semibold text-text-2">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+      Вы зритель — только просмотр
+    </span>
+  )
+}
+
+function EmptyState({ list, onAdd }: { list: ListSummary; onAdd?: () => void }) {
   return (
     <div className="mt-10 flex flex-col items-center gap-3 px-5 text-center lg:mt-5 lg:rounded-[28px] lg:bg-surface lg:px-6 lg:py-14">
       <span className="flex size-[76px] items-center justify-center rounded-[26px] bg-surface lg:hidden">
@@ -375,18 +420,26 @@ function EmptyState({ list, onAdd }: { list: ListSummary; onAdd: () => void }) {
         <ListIcon icon={list.icon} color={list.color} size={28} box={60} />
       </span>
       <span className="text-[19px] font-bold lg:text-[22px]">Здесь пока пусто</span>
-      <span className="text-sm leading-[1.45] text-text-2 lg:text-[15px]">
-        Добавьте первое желание — хватит названия.
-        <br />
-        Фото и ссылку можно добавить потом.
-      </span>
-      <Button
-        variant="dark"
-        onClick={onAdd}
-        className="mt-1.5 h-[50px] px-5 text-[15px] lg:mt-2 lg:px-[22px]"
-      >
-        Добавить первое желание
-      </Button>
+      {onAdd ? (
+        <>
+          <span className="text-sm leading-[1.45] text-text-2 lg:text-[15px]">
+            Добавьте первое желание — хватит названия.
+            <br />
+            Фото и ссылку можно добавить потом.
+          </span>
+          <Button
+            variant="dark"
+            onClick={onAdd}
+            className="mt-1.5 h-[50px] px-5 text-[15px] lg:mt-2 lg:px-[22px]"
+          >
+            Добавить первое желание
+          </Button>
+        </>
+      ) : (
+        <span className="text-sm leading-[1.45] text-text-2 lg:text-[15px]">
+          Когда в списке появятся желания, вы увидите их здесь.
+        </span>
+      )}
     </div>
   )
 }
@@ -398,8 +451,25 @@ const GRID =
  * Сетка карточек: телефон — 2 колонки, компьютер — 4–5 (Mobile-List / Desktop-List).
  * Все карточки ряда одной высоты (D-096). Нажатие открывает карточку поверх списка.
  */
-function WishGrid({ items, listId, label }: { items: WishItem[]; listId: string; label: string }) {
+function WishGrid({
+  items,
+  listId,
+  label,
+  authors,
+}: {
+  items: WishItem[]
+  listId: string
+  label: string
+  /** список с несколькими участниками — мини-аватар добавившего на карточке (D-115) */
+  authors?: boolean
+}) {
   const urls = usePhotoUrls(items.map((w) => w.imagePath))
+  const avatarUrls = usePhotoUrls(
+    authors ? items.map((w) => w.addedBy?.avatarPath) : [],
+    AVATAR_BUCKET,
+  )
+  const data = useAppData()
+  const myId = data.status === 'ready' ? data.profile.id : null
   return (
     <ul aria-label={label} className={`m-0 list-none p-0 ${GRID}`}>
       {items.map((w) => (
@@ -416,6 +486,20 @@ function WishGrid({ items, listId, label }: { items: WishItem[]; listId: string;
               photoUrl={w.imagePath ? urls[w.imagePath] : null}
               priority={w.priority}
               status={w.status}
+              author={
+                authors && w.addedBy ? (
+                  <Avatar
+                    name={w.addedBy.name}
+                    src={
+                      w.addedBy.avatarPath
+                        ? (avatarUrls[w.addedBy.avatarPath] ?? null)
+                        : w.addedBy.avatarUrl
+                    }
+                    size={22}
+                    tone={w.addedBy.userId === myId ? undefined : w.addedBy.userId}
+                  />
+                ) : undefined
+              }
             />
           </Link>
         </li>

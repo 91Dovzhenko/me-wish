@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import Avatar from '../../components/Avatar.tsx'
+import AvatarStack from '../../components/AvatarStack.tsx'
 import Hearts from '../../components/Hearts.tsx'
 import {
   ArrowRightIcon,
@@ -25,7 +27,7 @@ import {
 } from '../../data/AppData.tsx'
 import { useIsDesktop } from '../../hooks/useIsDesktop.ts'
 import { formatAddedDate, formatRub, wishCount } from '../../lib/format.ts'
-import { usePhotoUrls } from '../../lib/photos.ts'
+import { AVATAR_BUCKET, usePhotoUrls } from '../../lib/photos.ts'
 import { PRIORITY_LABELS, priorityLabel } from '../../lib/priority.ts'
 import WishForm from './WishForm.tsx'
 
@@ -62,6 +64,22 @@ export default function WishSheet({ item, list, onClose }: Props) {
   const urls = usePhotoUrls([item.imagePath])
   const photoUrl = item.imagePath ? urls[item.imagePath] : null
   const done = isDone(item.status)
+  // зритель видит карточку без элементов правки (4.13); роль может смениться, пока карточка открыта
+  const canEdit = list.myRole === 'editor'
+  // Сделали зрителем, пока открыта форма правки или меню: всё закрываем, про форму — тост
+  const wasEditing = useRef(false)
+  useEffect(() => {
+    wasEditing.current = !!editing
+  })
+  useEffect(() => {
+    if (canEdit) return
+    if (wasEditing.current) toast({ text: 'Вас сделали зрителем' })
+    const t = window.setTimeout(() => {
+      setEditing(null)
+      setOverlay(null)
+    }, 0)
+    return () => window.clearTimeout(t)
+  }, [canEdit, toast])
 
   const closeRef = useRef(onClose)
   const stateRef = useRef({ overlay, editing })
@@ -100,7 +118,8 @@ export default function WishSheet({ item, list, onClose }: Props) {
     if (s !== item.status) data.setStatus(item.itemId, s).catch(failed)
   }
 
-  const lists = data.status === 'ready' ? data.lists : []
+  // переместить и сменить список можно только в списки, где я редактор (004-b)
+  const lists = data.status === 'ready' ? data.lists.filter((l) => l.myRole === 'editor') : []
   const moveTo = (target: ListSummary) => {
     if (target.id === item.listId) {
       setOverlay(null)
@@ -148,13 +167,14 @@ export default function WishSheet({ item, list, onClose }: Props) {
     chooseStatus,
     openEdit,
     remove,
+    canEdit,
   }
 
   return (
     <>
       {isDesktop ? <DesktopCard {...props} /> : <MobileCard {...props} />}
 
-      {overlay === 'move' ? (
+      {overlay === 'move' && canEdit ? (
         <MovePicker
           lists={lists}
           currentId={item.listId}
@@ -164,11 +184,11 @@ export default function WishSheet({ item, list, onClose }: Props) {
         />
       ) : null}
 
-      {editing && data.status === 'ready' ? (
+      {editing && canEdit && data.status === 'ready' ? (
         <WishForm
           mode="edit"
           userId={data.profile.id}
-          lists={data.lists}
+          lists={lists}
           initialListId={item.listId}
           defaultListId={data.profile.defaultListId}
           fromListId={item.listId}
@@ -210,6 +230,7 @@ type ViewProps = {
   chooseStatus: (s: WishStatus) => void
   openEdit: (focusPrice?: boolean) => void
   remove: () => void
+  canEdit: boolean
 }
 
 // ─── Телефон: шторка ─────────────────────────────────────────
@@ -241,7 +262,7 @@ function MobileCard(p: ViewProps) {
         >
           <div className="relative w-[300px] max-w-[calc(100%-32px)] flex-none self-center">
             <PhotoSquare url={p.photoUrl} alt={item.title} radius={24} iconSize={64} />
-            {item.imagePath ? null : <AddPhotoButton onClick={() => p.openEdit()} />}
+            {item.imagePath || !p.canEdit ? null : <AddPhotoButton onClick={() => p.openEdit()} />}
             {p.done ? <DoneLabel status={item.status} /> : null}
             <button
               type="button"
@@ -251,17 +272,19 @@ function MobileCard(p: ViewProps) {
             >
               <CloseIcon size={16} />
             </button>
-            <CardMenu
-              open={overlay === 'menu'}
-              setOpen={(v) => setOverlay(v ? 'menu' : null)}
-              onEdit={() => p.openEdit()}
-              onMove={() => setOverlay('move')}
-              onDelete={p.remove}
-              buttonClassName="absolute -top-2 -right-4 shadow-photo"
-              idleBg="bg-surface"
-              panelClassName="absolute top-[58px] -right-4 z-30 w-[220px]"
-              dim
-            />
+            {p.canEdit ? (
+              <CardMenu
+                open={overlay === 'menu'}
+                setOpen={(v) => setOverlay(v ? 'menu' : null)}
+                onEdit={() => p.openEdit()}
+                onMove={() => setOverlay('move')}
+                onDelete={p.remove}
+                buttonClassName="absolute -top-2 -right-4 shadow-photo"
+                idleBg="bg-surface"
+                panelClassName="absolute top-[58px] -right-4 z-30 w-[220px]"
+                dim
+              />
+            ) : null}
           </div>
 
           <h1 className="m-0 mt-0.5 text-[21px] leading-[1.28] font-bold tracking-[-0.01em] [overflow-wrap:anywhere]">
@@ -274,7 +297,7 @@ function MobileCard(p: ViewProps) {
 
           <StatusField {...p} inline />
 
-          <InfoLine item={item} list={p.list} />
+          <InfoLine item={item} list={p.list} canEdit={p.canEdit} />
         </div>
 
         {hasLink ? (
@@ -307,21 +330,23 @@ function DesktopCard(p: ViewProps) {
       >
         <div className="relative max-w-[420px] flex-[1_1_340px] self-start">
           <PhotoSquare url={p.photoUrl} alt={item.title} radius={24} iconSize={72} />
-          {item.imagePath ? null : <AddPhotoButton onClick={() => p.openEdit()} />}
+          {item.imagePath || !p.canEdit ? null : <AddPhotoButton onClick={() => p.openEdit()} />}
           {p.done ? <DoneLabel status={item.status} /> : null}
         </div>
 
         <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-3.5 py-1 pr-1">
           <div className="relative -mb-1.5 flex justify-end gap-2">
-            <CardMenu
-              open={overlay === 'menu'}
-              setOpen={(v) => setOverlay(v ? 'menu' : null)}
-              onEdit={() => p.openEdit()}
-              onMove={() => setOverlay('move')}
-              onDelete={p.remove}
-              idleBg="bg-bg hover:bg-[#ebebe5]"
-              panelClassName="absolute top-[50px] right-0 z-30 w-[210px]"
-            />
+            {p.canEdit ? (
+              <CardMenu
+                open={overlay === 'menu'}
+                setOpen={(v) => setOverlay(v ? 'menu' : null)}
+                onEdit={() => p.openEdit()}
+                onMove={() => setOverlay('move')}
+                onDelete={p.remove}
+                idleBg="bg-bg hover:bg-[#ebebe5]"
+                panelClassName="absolute top-[50px] right-0 z-30 w-[210px]"
+              />
+            ) : null}
             <button
               type="button"
               aria-label="Закрыть"
@@ -342,7 +367,7 @@ function DesktopCard(p: ViewProps) {
 
           <StatusField {...p} inline={false} />
 
-          <InfoLine item={item} list={p.list} />
+          <InfoLine item={item} list={p.list} canEdit={p.canEdit} />
 
           {item.sourceUrl ? (
             <div className="mt-1">
@@ -387,10 +412,35 @@ function PriceRow({
   choosePriority,
   openEdit,
   large,
+  canEdit,
 }: ViewProps & { large: boolean }) {
   const open = overlay === 'priority'
   const rootRef = useRef<HTMLDivElement>(null)
   useDismiss(rootRef, open, () => setOverlay(null))
+  if (!canEdit) {
+    // зритель: цена и приоритет — текстом, без выбора и «+ Указать цену» (4.13)
+    return (
+      <div className={`flex items-center justify-between gap-3 ${large ? '' : '-mt-1.5'}`}>
+        {item.price != null ? (
+          <span
+            className={`font-display font-semibold tracking-[-0.03em] whitespace-nowrap ${
+              large ? 'text-[28px]' : 'text-2xl'
+            }`}
+          >
+            {formatRub(item.price)}
+          </span>
+        ) : (
+          <span className="text-[15px] font-semibold text-[#6b6d73]">Без цены</span>
+        )}
+        <span className="inline-flex items-center gap-2 whitespace-nowrap">
+          <Hearts level={item.priority} size={14} gap={0} />
+          <span className="text-sm font-semibold text-accent-2-text">
+            {priorityLabel(item.priority)}
+          </span>
+        </span>
+      </div>
+    )
+  }
   return (
     <div className={`flex items-center justify-between gap-3 ${large ? '' : '-mt-1.5'}`}>
       {item.price != null ? (
@@ -510,6 +560,7 @@ function StatusField({
   setOverlay,
   chooseStatus,
   inline,
+  canEdit,
 }: ViewProps & { inline: boolean }) {
   const open = overlay === 'status'
   const rootRef = useRef<HTMLDivElement>(null)
@@ -548,6 +599,16 @@ function StatusField({
       })}
     </div>
   )
+
+  if (!canEdit) {
+    // зритель: статус текстом (4.13)
+    return (
+      <div className={inline ? 'flex flex-col gap-1.5' : 'flex items-center gap-3'}>
+        <span className={inline ? 'text-xs text-text-2' : 'text-[13px] text-text-2'}>Статус</span>
+        <span className="text-[15px] font-semibold">{statusLabel(item.status)}</span>
+      </div>
+    )
+  }
 
   if (inline) {
     return (
@@ -597,7 +658,59 @@ function StatusField({
   )
 }
 
-function InfoLine({ item, list }: { item: WishItem; list: ListSummary }) {
+/**
+ * Нижняя строка: обычный список — «В списке «…» · добавлено …»; совместный — «Олеся · добавлено … · «…»»
+ * с мини-аватаром (4.12; имя без рода и падежа — D-121); зритель — «Вы зритель — только просмотр» (4.13).
+ */
+function InfoLine({
+  item,
+  list,
+  canEdit,
+}: {
+  item: WishItem
+  list: ListSummary
+  canEdit: boolean
+}) {
+  const author = item.addedBy
+  const urls = usePhotoUrls([author?.avatarPath], AVATAR_BUCKET)
+  if (!canEdit) {
+    return (
+      <p className="m-0 flex items-center gap-1.5 text-[13px] text-text-2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="flex-none"
+        >
+          <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        Вы зритель — только просмотр
+      </p>
+    )
+  }
+  if (list.members.length > 1 && author) {
+    const isMe = list.members.some((m) => m.isMe && m.userId === author.userId)
+    return (
+      <p className="m-0 flex items-center gap-2 text-[13px] text-text-2">
+        <Avatar
+          name={author.name}
+          src={author.avatarPath ? (urls[author.avatarPath] ?? null) : author.avatarUrl}
+          size={22}
+          tone={isMe ? undefined : author.userId}
+        />
+        <span className="min-w-0">
+          {author.name} · добавлено {formatAddedDate(item.addedAt)} · «{list.title}»
+        </span>
+      </p>
+    )
+  }
   return (
     <p className="m-0 text-[13px] text-text-2">
       В списке «{list.title}» · добавлено {formatAddedDate(item.addedAt)}
@@ -720,7 +833,7 @@ function MovePicker({
     return () => document.removeEventListener('keydown', onKey, true)
   }, [])
 
-  const rows: ReactNode = lists.map((l) => {
+  const row = (l: ListSummary) => {
     const cur = l.id === currentId
     return (
       <button
@@ -734,6 +847,7 @@ function MovePicker({
       >
         <ListIcon icon={l.icon} color={l.color} size={16} box={isDesktop ? 32 : 34} />
         <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">{l.title}</span>
+        {l.members.length > 1 ? <AvatarStack people={l.members} size={20} /> : null}
         <span className="flex-none text-[13px] text-text-2">{wishCount(l.itemCount)}</span>
         {cur ? (
           <CheckIcon size={18} strokeWidth={2.4} className="flex-none" />
@@ -742,7 +856,21 @@ function MovePicker({
         )}
       </button>
     )
-  })
+  }
+  // 4.9: «Мои списки» и «Совместные» (только где я редактор)
+  const mine = lists.filter((l) => l.section === 'mine')
+  const shared = lists.filter((l) => l.section === 'shared')
+  const rows: ReactNode =
+    shared.length === 0 ? (
+      lists.map(row)
+    ) : (
+      <>
+        <SectionLabel first>Мои списки</SectionLabel>
+        {mine.map(row)}
+        <SectionLabel>Совместные</SectionLabel>
+        {shared.map(row)}
+      </>
+    )
 
   return createPortal(
     <div className="fixed inset-0 z-50">
@@ -784,5 +912,17 @@ function MovePicker({
       )}
     </div>,
     document.body,
+  )
+}
+
+function SectionLabel({ children, first }: { children: ReactNode; first?: boolean }) {
+  return (
+    <span
+      className={`mx-1.5 flex-none text-xs font-bold tracking-[0.04em] text-text-2 uppercase ${
+        first ? 'mt-1' : 'mt-2.5'
+      }`}
+    >
+      {children}
+    </span>
   )
 }
