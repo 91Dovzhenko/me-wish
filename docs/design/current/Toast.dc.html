@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Тост</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div role="status" style="display: inline-flex; align-items: center; gap: 12px; max-width: 360px; box-sizing: border-box; min-height: 48px; padding: 8px 8px 8px 16px; border-radius: 16px; background: #17181C; color: #FFFFFF; font-family: Onest, sans-serif; box-shadow: 0 12px 30px rgba(23, 24, 28, 0.25)">
+<sc-if value="{{isError}}"><svg width="18" height="18" viewBox="0 0 24 24" style="flex: none; stroke:#FF8A80;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></sc-if>
+<sc-if value="{{isOk}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" style="flex: none; stroke:#C8F56A;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></sc-if>
+<span style="flex: 1; font-size: 14px; font-weight: 500; line-height: 1.35; padding: 6px 0">{{text}}</span>
+<sc-if value="{{hasAction}}"><button type="button" style="flex: none; height: 36px; padding: 0 12px; border: none; border-radius: 10px; background: #2C2D33; color: #C8F56A; font-family: Onest, sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap">{{action}}</button></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"text":{"editor":"text","default":"Сохранено"},"action":{"editor":"text","default":""},"kind":{"editor":"enum","options":["ok","error"],"default":"ok"},"$preview":{"width":360,"height":60}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const action = this.props.action ?? '';
+    const err = (this.props.kind ?? 'ok') === 'error';
+    return { text: this.props.text ?? 'Сохранено', action, hasAction: action !== '', isError: err, isOk: !err };
+  }
+}
+</script>
+</body>
+</html>

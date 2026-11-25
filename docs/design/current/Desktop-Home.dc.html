@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Главная — компьютер</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="position: relative; width: 100%; min-height: 960px; box-sizing: border-box; background: #F4F4EF; font-family: Onest, sans-serif; color: #17181C; padding: 12px; display: flex; gap: {{gap}}">
+<div style="flex: none; display: flex"><dc-import name="Sidebar" active="home" menu="{{menu}}" many="{{many}}" first="{{first}}" sections="{{showShared}}" panel="{{panel}}" hint-size="260px,936px"></dc-import></div>
+<main style="flex: 1; min-width: 0; box-sizing: border-box; background: {{mainBg}}; border-radius: 32px; padding: {{mainPad}}; display: flex; flex-direction: column; gap: 22px">
+<header style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-family: Unbounded, sans-serif; font-size: 32px; font-weight: 600; letter-spacing: -0.03em">Главная</h1>
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}"><p aria-label="Сводка" style="margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; font-size: 14px; color: #5E6066"><span style="white-space: nowrap">Активные <b style="color: #17181C; font-weight: 600">21 · 186 400 ₽</b></span><span style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: #3F4A22; background: #F1F8DE; padding: 3px 10px 3px 6px; border-radius: 999px"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:#4D7C0F;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>Исполнено в 2026: <b style="color: #17181C; font-weight: 600">7 · 54 300 ₽</b></span></p></sc-if><sc-if value="{{first}}"><p aria-label="Сводка" style="margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; font-size: 14px; color: #5E6066"><span style="white-space: nowrap">Активные <b style="color: #17181C; font-weight: 600">0 · 0 ₽</b></span><span style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: #3F4A22; background: #F1F8DE; padding: 3px 10px 3px 6px; border-radius: 999px"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:#4D7C0F;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>Исполнено в 2026: <b style="color: #17181C; font-weight: 600">0 · 0 ₽</b></span></p></sc-if><sc-if value="{{loading}}"><div aria-hidden="true" style="display: flex; gap: 12px; padding-top: 4px"><div style="width: 190px; height: 18px; border-radius: 9px; background: #E6E5DF"></div><div style="width: 240px; height: 26px; border-radius: 13px; background: #E9E9E3; margin-top: -4px"></div></div></sc-if>
+</div>
+<a href="Desktop-Add.dc.html" style="white-space: nowrap; flex: none; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 20px; border-radius: 16px; background: #C8F56A; color: #17181C; text-decoration: none; font-size: 15px; font-weight: 700"><svg width="18" height="18" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2.2;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Добавить желание</a>
+</header>
+<div style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Мои списки</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px">
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}"><sc-for list="{{mineList}}" as="l" hint-placeholder-count="4"><div style="background: {{coverWrap}}; border-radius: 26px; padding: {{coverPad}}"><dc-import name="Cover" title="{{l.title}}" meta="{{l.meta}}" date="{{l.date}}" photos="{{l.photos}}" icon="{{l.icon}}" color="{{l.color}}" h="180" href="Desktop-List.dc.html" hint-size="100%,240px"></dc-import></div></sc-for></sc-if><sc-if value="{{loading}}"><sc-for list="{{skel}}" as="k" hint-placeholder-count="4"><div aria-hidden="true" style="background: #FFFFFF; border-radius: 22px; padding: 6px; display: flex; flex-direction: column; gap: 8px"><div style="height: 180px; border-radius: 17px; background: #EEEDE8"></div><div style="margin: 0 8px; height: 15px; width: 65%; border-radius: 7px; background: #EEEDE8"></div><div style="margin: 0 8px 8px; height: 11px; width: 45%; border-radius: 5px; background: #F2F1EC"></div></div></sc-for></sc-if><sc-if value="{{first}}"><dc-import name="Cover" title="Мои желания" meta="Список по умолчанию" date="" photos="{{none}}" icon="heart" color="lavender" h="180" href="Desktop-List-Empty.dc.html" hint-size="100%,240px"></dc-import><div style="grid-column: span 2; background: #FFFFFF; border-radius: 26px; padding: 26px 28px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; justify-content: center"><span style="font-size: 12px; font-weight: 700; color: #4B3BC4; background: #EEE9FF; padding: 4px 10px; border-radius: 999px">С чего начать</span><p style="margin: 0; font-size: 22px; font-weight: 700; line-height: 1.3">Добавьте первое желание — хватит названия</p><p style="margin: 0; font-size: 15px; color: #5E6066; line-height: 1.45; max-width: 460px">Сделайте скриншот товара, перетащите его в окно или вставьте ⌘V, добавьте ссылку — чтобы подарили именно то, что нужно.</p><a href="Desktop-Add.dc.html" style="margin-top: 6px; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 16px; background: #17181C; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 15px; white-space: nowrap">Добавить первое желание</a></div></sc-if>
+</div>
+</div>
+<sc-if value="{{showShared}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Совместные</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px">
+<sc-for list="{{shared}}" as="l" hint-placeholder-count="2"><dc-import name="Cover" title="{{l.title}}" meta="{{l.meta}}" date="{{l.date}}" photos="{{l.photos}}" icon="{{l.icon}}" color="{{l.color}}" members="{{l.who}}" h="160" href="Shared-List-Desktop.dc.html" hint-size="100%,220px"></dc-import></sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 14px; margin-top: 8px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Со мной поделились</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px">
+<sc-for list="{{viewer}}" as="l" hint-placeholder-count="2"><dc-import name="Cover" title="{{l.title}}" meta="{{l.meta}}" date="{{l.date}}" photos="{{l.photos}}" icon="{{l.icon}}" color="{{l.color}}" members="{{l.who}}" h="160" href="Shared-Viewer-List.dc.html" hint-size="100%,220px"></dc-import></sc-for>
+</div>
+</div></sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"menu":{"editor":"boolean","default":false},"many":{"editor":"boolean","default":false},"sections":{"editor":"boolean","default":true},"state":{"editor":"enum","options":["normal","loading","firstrun"],"default":"normal"},"variant":{"editor":"enum","options":["current","A","B"],"default":"B"},"offline":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.props.state ?? 'normal';
+    const sec = (this.props.sections ?? true) && st === 'normal' && !this.props.many;
+    const LISTS = [
+        { title: 'Мои желания', meta: '7 желаний · 24 760 ₽', date: '', photos: ['p1', 'p3', 'p2', 'p5'], icon: 'heart', color: 'lavender' },
+        { title: 'День рождения', meta: '8 желаний · 61 200 ₽', date: '14 марта', photos: ['p6', 'p4', 'p3'], icon: 'cake', color: 'pink' },
+        { title: 'Для поездок', meta: '2 желания · 1 639 ₽', date: '', photos: ['p5', 'p4'], icon: 'plane', color: 'blue' },
+        { title: 'Новый год', meta: 'Пока пусто', date: '31 декабря', photos: [], icon: 'tree', color: 'mint' }
+      ];
+    const D = {
+      mine: [
+        { title: 'Мои желания', meta: '7 желаний · 24 760 ₽', date: '', photos: ['p1', 'p3', 'p2', 'p5'], icon: 'heart', color: 'lavender' },
+        { title: 'День рождения', meta: '8 желаний · 61 200 ₽', date: '14 марта', photos: ['p6', 'p4', 'p3'], icon: 'cake', color: 'pink' },
+        { title: 'Для поездок', meta: '2 желания · 1 639 ₽', date: '', photos: ['p5', 'p4'], icon: 'plane', color: 'blue' }
+      ],
+      shared: [
+        { title: 'Для дома', meta: '6 желаний · 38 900 ₽', date: '', photos: ['p6', 'p1', 'p3', 'p4'], icon: 'home', color: 'sand', who: ['vitaly', 'olesya'] },
+        { title: 'Новый год', meta: '4 желания · 12 300 ₽', date: '31 декабря', photos: ['p2', 'p5'], icon: 'tree', color: 'mint', who: ['vitaly', 'olesya', 'anya'] }
+      ],
+      viewer: [
+        { title: 'Олеся: день рождения', meta: '5 желаний · 21 000 ₽', date: '3 мая', photos: ['p4', 'p2', 'p5'], icon: 'gift', color: 'peach', who: ['olesya'] }
+      ]
+    };
+    return {
+      showShared: sec, shared: D.shared, viewer: D.viewer, mineList: sec ? D.mine : LISTS,
+      menu: !!this.props.menu, many: !!this.props.many,
+      ready: (this.props.state ?? 'normal') === 'normal', loading: this.props.state === 'loading', first: this.props.state === 'firstrun', skel: [1, 2, 3, 4], none: [],
+      ...(() => {
+        const v = this.props.variant ?? 'B';
+        if (v === 'A') return { panel: 'line', mainBg: 'transparent', mainPad: '36px 32px 48px', coverWrap: 'transparent', coverPad: '0', gap: '8px' };
+        if (v === 'B') return { panel: 'white', mainBg: 'transparent', mainPad: '36px 32px 48px', coverWrap: 'transparent', coverPad: '0', gap: '12px' };
+        return { panel: 'none', mainBg: '#FFFFFF', mainPad: '36px 44px 48px', coverWrap: '#F4F4EF', coverPad: '4px', gap: '0' };
+      })(),
+      lists: LISTS
+    };
+  }
+}
+</script>
+</body>
+</html>

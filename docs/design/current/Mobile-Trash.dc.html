@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Корзина — телефон</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; box-sizing: border-box; background: #F4F4EF; font-family: Onest, sans-serif; color: #17181C; padding: 58px 20px 30px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; align-items: center; gap: 8px">
+<a href="Mobile-Profile.dc.html" aria-label="Назад" style="width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a>
+<h1 style="margin: 0; font-size: 20px; font-weight: 700">Корзина</h1>
+</div>
+<sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}"><button type="button" style="height: 44px; border: none; background: none; padding: 0 4px; font-family: Onest, sans-serif; font-size: 14px; font-weight: 600; color: #B42318; cursor: pointer">Очистить корзину</button></sc-if>
+</div>
+<sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}"><p style="margin: 0; font-size: 13px; color: #5E6066; line-height: 1.4">Удалённые желания хранятся 30 дней, потом исчезают навсегда.</p></sc-if>
+
+<sc-if value="{{isEmpty}}"><div style="margin-top: 80px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center"><span style="width: 72px; height: 72px; border-radius: 24px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="32" height="32" viewBox="0 0 24 24" style="stroke:#8A8B90;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></span><span style="font-size: 18px; font-weight: 700">Корзина пуста</span><span style="font-size: 14px; color: #5E6066; max-width: 260px; line-height: 1.4">Удалённые желания появятся здесь и будут храниться 30 дней</span></div></sc-if>
+<sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{items}}" as="t" hint-placeholder-count="3">
+<div style="background: #FFFFFF; border-radius: 22px; padding: 10px; display: flex; align-items: center; gap: 12px">
+<div style="width: 64px; flex: none"><dc-import name="Photo" p="{{t.p}}" radius="14" hint-size="64px,64px"></dc-import></div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.title}}</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #5E6066; line-height: 1.35"><sc-if value="{{t.by}}"><dc-import name="Avatar" who="olesya" size="16" hint-size="16px,16px"></dc-import></sc-if>{{t.sub}}</span>
+</div>
+<button type="button" style="height: 44px; flex: none; border: none; border-radius: 14px; padding: 0 12px; background: #EEE9FF; color: #4B3BC4; font-family: Onest, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer">Восстановить</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{dlgRestore}}"><div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(23, 24, 28, 0.4)"></div><div style="position: absolute; left: 24px; right: 24px; top: 270px"><dc-import name="Dialog" title="Восстановить в список" body="Списка «День рождения» больше нет. Куда вернуть «Билеты на концерт»?" primary="Восстановить" secondary="Отмена" danger="{{ false }}" select="{{ true }}" hint-size="342px,270px"></dc-import></div></sc-if>
+<sc-if value="{{dlgClear}}"><div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(23, 24, 28, 0.4)"></div><div style="position: absolute; left: 24px; right: 24px; top: 300px"><dc-import name="Dialog" title="Удалить навсегда 3 желания?" body="Восстановить их будет нельзя." primary="Удалить" secondary="Отмена" hint-size="342px,200px"></dc-import></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"empty":{"editor":"boolean","default":false},"shared":{"editor":"boolean","default":true},"dialog":{"editor":"enum","options":["none","restore","clear"],"default":"none"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const empty = !!this.props.empty;
+    const sh = this.props.shared ?? true;
+    const fix = (arr) => arr.map((t) => ({ ...t, by: !!t.by, sub: t.by ? 'Удалила Олеся · из «' + t.list + '» · удалится через ' + t.days : 'Из «' + t.list + '» · удалится через ' + t.days }));
+    return { dlgRestore: this.props.dialog === 'restore', dlgClear: this.props.dialog === 'clear', isEmpty: empty, hasItems: !empty, items: fix([
+      sh ? { title: 'Штатив K&F Concept K234A0', list: 'Для дома', days: '12 дн.', p: 'p6', by: true } : { title: 'Очки солнцезащитные, чёрные', list: 'Для поездок', days: '27 дн.', p: 'p2' },
+      { title: 'Карабины алюминиевые, 5 шт.', list: 'Мои желания', days: '12 дн.', p: 'p5' },
+      { title: 'Билеты на концерт', list: 'День рождения', days: '3 дн.', p: '' }
+    ]) };
+  }
+}
+</script>
+</body>
+</html>

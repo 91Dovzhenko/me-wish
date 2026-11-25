@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Карточка в сетке</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<a href="{{href}}" style="display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; background: #FFFFFF; border-radius: 20px; padding: {{pad}}; border: {{border}}; text-decoration: none; color: #17181C; font-family: Onest, sans-serif">
+<div style="position: relative">
+<dc-import name="Photo" p="{{p}}" radius="15" dim="{{isDone}}" hint-size="100%,170px"></dc-import>
+<sc-if value="{{hot}}"><span style="position: absolute; left: 6px; top: 6px; white-space: nowrap; background: #C8F56A; color: #17181C; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px">{{levelLabel}}</span></sc-if>
+<sc-if value="{{hasBy}}"><span style="position: absolute; right: 6px; bottom: 6px; display: inline-flex"><dc-import name="Avatar" who="{{by}}" size="22" ring="2" hint-size="22px,22px"></dc-import></span></sc-if>
+<sc-if value="{{isDone}}"><span style="position: absolute; left: 6px; top: 6px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; background: #17181C; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 3px 8px 3px 6px; border-radius: 999px"><svg width="11" height="11" viewBox="0 0 24 24" style="stroke:#C8F56A;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>{{statusLabel}}</span></sc-if>
+</div>
+<div style="padding: 0 6px; display: flex; flex-direction: column; gap: 3px; opacity: {{textOpacity}}">
+<span style="font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: {{priceColor}}">{{priceText}}</span>
+<span style="font-size: 13px; line-height: 1.3; min-height: 2.6em; max-height: 2.6em; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical">{{title}}</span>
+<span style="margin-top: 2px"><dc-import name="Hearts" level="{{level}}" size="11" gap="0" hint-size="55px,11px"></dc-import></span>
+</div>
+</a>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"title":{"editor":"text","default":"Штатив K&amp;F Concept K254A7 с видеоголовой FH-03"},"price":{"editor":"text","default":"11 990 ₽"},"p":{"editor":"enum","options":["p1","p2","p3","p4","p5","p6",""],"default":"p1"},"level":{"editor":"int","min":1,"max":5,"default":5},"status":{"editor":"enum","options":["active","purchased","gifted"],"default":"active"},"href":{"editor":"text","default":"Mobile-Card.dc.html"},"framed":{"editor":"boolean","default":false},"by":{"editor":"text","default":""},"$preview":{"width":180,"height":280}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const labels = { 1: 'Можно и без', 2: 'Было бы неплохо', 3: 'Хочу', 4: 'Очень хочу', 5: 'Мечта' };
+    const state = this.props.status ?? 'active';
+    const level = this.props.level ?? 5;
+    const isDone = state === 'purchased' || state === 'gifted';
+    const price = this.props.price ?? '11 990 ₽';
+    return {
+      title: this.props.title ?? 'Штатив K&F Concept K254A7 с видеоголовой FH-03',
+      p: this.props.p ?? 'p1',
+      priceText: price ? price : 'Без цены',
+      priceColor: price ? '#17181C' : '#6B6D73',
+      level, levelLabel: labels[level],
+      hot: !isDone && level >= 4,
+      isDone, statusLabel: state === 'gifted' ? 'Подарили' : 'Куплено',
+      textOpacity: isDone ? 0.6 : 1,
+      href: this.props.href ?? 'Mobile-Card.dc.html',
+      pad: this.props.framed ? '8px 8px 12px' : '6px 6px 10px',
+      border: this.props.framed ? '1px solid #E6E5DF' : '0',
+      by: this.props.by ?? '', hasBy: (this.props.by ?? '') !== ''
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Список — телефон</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; box-sizing: border-box; background: #F4F4EF; font-family: Onest, sans-serif; color: #17181C">
+<div style="padding: 54px 16px 120px; display: flex; flex-direction: column; gap: 12px; transform: translateY({{shift}}px)">
+<header style="display: flex; align-items: center; justify-content: space-between">
+<a href="Main.dc.html" aria-label="Назад" style="width: 44px; height: 44px; border-radius: 999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></a>
+<a href="Mobile-List-Menu.dc.html" aria-label="Меню списка" style="width: 44px; height: 44px; border-radius: 999px; background: {{menuBg}}; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:3;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></a>
+</header>
+<div style="padding: 0 4px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 10px"><dc-import name="ListIcon" kind="{{lIcon}}" color="{{lColor}}" size="17" box="32" hint-size="32px,32px"></dc-import><h1 style="margin: 0; font-family: Unbounded, sans-serif; font-size: 24px; font-weight: 600; letter-spacing: -0.03em; white-space: nowrap">{{lTitle}}</h1><sc-if value="{{isShared}}"><a href="Shared-Members.dc.html" aria-label="Участники: Виталий, Олеся" style="margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 2px"><dc-import name="AvatarStack" who="{{members}}" size="28" ring="#F4F4EF" hint-size="48px,28px"></dc-import></a></sc-if></div>
+<sc-if value="{{isViewer}}"><span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: #FFFFFF; font-size: 12px; font-weight: 600; color: #5E6066"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:#5E6066;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>Вы зритель — только просмотр</span></sc-if>
+<sc-if value="{{hasDesc}}" hint-placeholder-val="{{ true }}"><p style="margin: 0; font-size: 14px; color: #5E6066">{{lDesc}}</p></sc-if>
+<sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}"><p aria-label="Сводка списка" style="margin: 2px 0 0; font-size: 13px; color: #5E6066">Активные <b style="color: #17181C; font-weight: 600">{{activeSum}}</b><span aria-hidden="true" style="margin: 0 8px; color: #C9C8C2">|</span><span style="white-space: nowrap">Исполнено <b style="color: #17181C; font-weight: 600">{{doneSum}}</b></span></p></sc-if>
+</div>
+<sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<a href="Mobile-List-Sort.dc.html" style="display: inline-flex; align-items: center; gap: 6px; height: 40px; box-sizing: border-box; background: {{sortBg}}; border-radius: 999px; padding: 0 14px; white-space: nowrap; font-size: 14px; font-weight: 600; color: #17181C; text-decoration: none"><svg width="15" height="15" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"></path></svg>По приоритету</a>
+<button type="button" role="switch" aria-checked="true" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; border: none; border-radius: 999px; padding: 0 14px 0 8px; background: #FFFFFF; color: #17181C; font-family: Onest, sans-serif; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer"><span aria-hidden="true" style="width: 22px; height: 22px; border-radius: 999px; background: #C8F56A; display: inline-flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none"><path d="M5 12l5 5 9-10"></path></svg></span>Исполненные</button>
+</div>
+</sc-if>
+<sc-if value="{{hasActive}}" hint-placeholder-val="{{ true }}"><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{wishes}}" as="w" hint-placeholder-count="4"><dc-import name="WishCard" title="{{w.title}}" price="{{w.price}}" p="{{w.p}}" level="{{w.level}}" status="{{w.state}}" by="{{w.by}}" hint-size="100%,265px"></dc-import></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{allDoneNote}}"><div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 20px; background: #F1F8DE"><span style="width: 40px; height: 40px; flex: none; border-radius: 999px; background: #C8F56A; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">Всё исполнено</span><span style="font-size: 13px; color: #3F4A22">Добавьте новое желание или загляните в другие списки</span></span></div></sc-if>
+<sc-if value="{{hasDone}}" hint-placeholder-val="{{ true }}"><h2 style="margin: 8px 4px 0; font-size: 17px; font-weight: 700">Исполнено <span style="color: #5E6066; font-weight: 500">· {{doneN}}</span></h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{done}}" as="w" hint-placeholder-count="2"><dc-import name="WishCard" title="{{w.title}}" price="{{w.price}}" p="{{w.p}}" level="{{w.level}}" status="{{w.state}}" by="{{w.by}}" hint-size="100%,265px"></dc-import></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{isEmpty}}"><div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 0 20px"><span style="width: 76px; height: 76px; border-radius: 26px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><dc-import name="ListIcon" kind="heart" color="lavender" size="26" box="52" hint-size="52px,52px"></dc-import></span><span style="font-size: 19px; font-weight: 700">Здесь пока пусто</span><span style="font-size: 14px; color: #5E6066; line-height: 1.45">Добавьте первое желание — хватит названия.<br>Фото и ссылку можно добавить потом.</span><a href="Mobile-Add-FromList.dc.html" style="margin-top: 6px; height: 50px; display: inline-flex; align-items: center; padding: 0 20px; border-radius: 16px; background: #17181C; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600">Добавить первое желание</a></div></sc-if>
+<sc-if value="{{loading}}"><div aria-hidden="true" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px"><sc-for list="{{skel}}" as="k" hint-placeholder-count="4"><div style="background: #FFFFFF; border-radius: 20px; padding: 6px 6px 12px; display: flex; flex-direction: column; gap: 8px"><div style="aspect-ratio: 1 / 1; border-radius: 15px; background: #EEEDE8"></div><div style="margin: 0 6px; height: 14px; width: 45%; border-radius: 7px; background: #EEEDE8"></div><div style="margin: 0 6px; height: 10px; width: 85%; border-radius: 5px; background: #F2F1EC"></div><div style="margin: 0 6px; height: 10px; width: 60%; border-radius: 5px; background: #F2F1EC"></div></div></sc-for></div></sc-if>
+</div>
+<sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><a href="Mobile-Add-FromList.dc.html" aria-label="Добавить желание в этот список" style="position: absolute; right: 20px; bottom: 28px; width: 64px; height: 64px; border-radius: 999px; background: #C8F56A; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px rgba(116, 150, 30, 0.35), 0 2px 6px rgba(23, 24, 28, 0.12)"><svg width="28" height="28" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a></sc-if>
+
+<sc-if value="{{showSort}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(23, 24, 28, 0.12)"></div>
+<div role="listbox" aria-label="Сортировка" style="position: absolute; left: 16px; top: 268px; width: 250px; background: #FFFFFF; border-radius: 20px; padding: 6px; box-shadow: 0 16px 40px rgba(23, 24, 28, 0.18); display: flex; flex-direction: column">
+<sc-for list="{{sorts}}" as="o" hint-placeholder-count="5"><button type="button" role="option" aria-selected="{{o.sel}}" style="display: flex; align-items: center; justify-content: space-between; height: 46px; border: none; border-radius: 14px; padding: 0 12px; background: {{o.bg}}; font-family: Onest, sans-serif; font-size: 15px; font-weight: {{o.w}}; color: #17181C; cursor: pointer; text-align: left">{{o.t}}<sc-if value="{{o.on}}"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></sc-if></button></sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{showMenu}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(23, 24, 28, 0.12)"></div>
+<div role="menu" aria-label="Меню списка" style="position: absolute; right: 16px; top: 104px; width: 220px; background: #FFFFFF; border-radius: 20px; padding: 6px; box-shadow: 0 16px 40px rgba(23, 24, 28, 0.18); display: flex; flex-direction: column">
+<sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><a href="Mobile-ListSettings.dc.html" role="menuitem" style="display: flex; align-items: center; gap: 12px; height: 46px; border-radius: 14px; padding: 0 12px; font-size: 15px; color: #17181C; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"></path></svg>Редактировать</a></sc-if><sc-if value="{{isShared}}"><a href="Shared-Members.dc.html" role="menuitem" style="display: flex; align-items: center; gap: 12px; height: 46px; border-radius: 14px; padding: 0 12px; font-size: 15px; color: #17181C; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M16 3.5a4 4 0 0 1 0 7.5M18 14a6 6 0 0 1 4 7"></path></svg>Участники</a></sc-if>
+<div aria-hidden="true" style="height: 1px; background: #EEEDE8; margin: 4px 8px"></div>
+<sc-if value="{{canDelete}}" hint-placeholder-val="{{ true }}"><a href="{{deleteHref}}" role="menuitem" style="display: flex; align-items: center; gap: 12px; height: 46px; border-radius: 14px; padding: 0 12px; font-size: 15px; color: #B42318; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" style="stroke:#B42318;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>Удалить</a></sc-if><sc-if value="{{cannotDelete}}"><div role="menuitem" aria-disabled="true" style="display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-radius: 14px; color: #A9AAAF"><span style="display: flex; align-items: center; gap: 12px; font-size: 15px"><svg width="18" height="18" viewBox="0 0 24 24" style="stroke:#A9AAAF;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>Удалить</span><span style="font-size: 12px; color: #6B6D73; padding-left: 30px">Нельзя удалить единственный список</span></div></sc-if>
+<sc-if value="{{isShared}}"><a href="Shared-Dialog-Leave.dc.html" role="menuitem" style="display: flex; align-items: center; gap: 12px; height: 46px; border-radius: 14px; padding: 0 12px; font-size: 15px; color: #B42318; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" style="stroke:#B42318;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"></path></svg>Выйти из списка</a></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{hasToast}}"><div style="position: absolute; left: 16px; right: 96px; bottom: 34px"><dc-import name="Toast" text="{{toastText}}" action="{{toastAction}}" hint-size="100%,52px"></dc-import></div></sc-if>
+<sc-if value="{{showDelete}}"><div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(23, 24, 28, 0.4)"></div><div style="position: absolute; left: 24px; right: 24px; top: 280px"><dc-import name="Dialog" title="Удалить список и 8 желаний?" body="Желания попадут в корзину, их можно восстановить 30 дней." primary="Удалить" secondary="Отмена" hint-size="342px,210px"></dc-import></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"overlay":{"editor":"enum","options":["none","sort","menu","menuLast","delete"],"default":"none"},"state":{"editor":"enum","options":["normal","loading","empty","alldone","compact","done"],"default":"normal"},"toast":{"editor":"text","default":""},"toastAction":{"editor":"text","default":""},"shift":{"editor":"int","default":0},"shared":{"editor":"enum","options":["none","editor","viewer"],"default":"none"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ov = this.props.overlay ?? 'none';
+    const st = this.props.state ?? 'normal';
+    const sh = this.props.shared ?? 'none';
+    const isSh = sh !== 'none';
+    const sorts = ['По приоритету', 'Сначала дешёвые', 'Сначала дорогие', 'По дате добавления', 'По статусу'].map((t, i) => ({
+      t, on: i === 0, sel: i === 0 ? 'true' : 'false', bg: i === 0 ? '#F4F4EF' : 'transparent', w: i === 0 ? 600 : 400
+    }));
+    return {
+      showSort: ov === 'sort', showMenu: ov === 'menu' || ov === 'menuLast',
+      canDelete: ov !== 'menuLast' && sh !== 'viewer', cannotDelete: ov === 'menuLast', showDelete: ov === 'delete',
+      loading: st === 'loading', isEmpty: st === 'empty', allDoneNote: st === 'alldone',
+      hasItems: st !== 'loading' && st !== 'empty', hasActive: !['loading', 'empty', 'alldone'].includes(st),
+      hasDone: !['loading', 'empty'].includes(st), hasDesc: st !== 'compact' && st !== 'empty',
+      doneN: st === 'alldone' ? 4 : 2,
+      activeSum: st === 'alldone' ? '0 · 0 ₽' : (isSh ? '4 · 24 460 ₽' : '5 · 24 760 ₽'),
+      doneSum: st === 'alldone' ? '4 · 13 119 ₽' : '2 · 1 339 ₽',
+      skel: [1, 2, 3, 4],
+      hasToast: (this.props.toast ?? '') !== '', toastText: this.props.toast ?? '', toastAction: this.props.toastAction ?? '',
+      shift: this.props.shift ?? 0,
+      isShared: isSh, isViewer: sh === 'viewer', canEdit: sh !== 'viewer',
+      members: sh === 'viewer' ? ['olesya', 'vitaly'] : ['vitaly', 'olesya'],
+      lTitle: sh === 'viewer' ? 'Олеся: день рождения' : (isSh ? 'Для дома' : 'Мои желания'),
+      lIcon: sh === 'viewer' ? 'gift' : (isSh ? 'home' : 'heart'),
+      lColor: sh === 'viewer' ? 'peach' : (isSh ? 'sand' : 'lavender'),
+      lDesc: sh === 'viewer' ? 'Что подарить мне на день рождения' : (isSh ? 'Всё для квартиры — выбираем вместе' : 'Всё, что хочется себе — без повода'),
+      deleteHref: isSh ? 'Shared-Dialog-DeleteAll.dc.html' : 'Mobile-List-DeleteConfirm.dc.html',
+      sortBg: ov === 'sort' ? '#EEE9FF' : '#FFFFFF',
+      menuBg: ov === 'menu' ? '#EEE9FF' : '#FFFFFF',
+      sorts,
+      wishes: isSh ? [
+        { title: 'Штатив K&F Concept K234A0 с шаровой головой', price: '6 490 ₽', p: 'p6', level: 4, state: 'active', by: sh === 'viewer' ? '' : 'olesya' },
+        { title: 'Штатив K&F Concept K254A7 с видеоголовой FH-03', price: '11 990 ₽', p: 'p1', level: 5, state: 'active', by: sh === 'viewer' ? '' : 'vitaly' },
+        { title: 'Клетка SmallRig 3538B для Sony ZV-E10', price: '4 990 ₽', p: 'p3', level: 3, state: 'active', by: sh === 'viewer' ? '' : 'olesya' },
+        { title: 'Очки квадратные, голубая оправа', price: '990 ₽', p: 'p4', level: 3, state: 'active', by: sh === 'viewer' ? '' : 'vitaly' }
+      ] : [
+        { title: 'Штатив K&F Concept K254A7 с видеоголовой FH-03', price: '11 990 ₽', p: 'p1', level: 5, state: 'active' },
+        { title: 'Клетка SmallRig 3538B для Sony ZV-E10', price: '4 990 ₽', p: 'p3', level: 4, state: 'active' },
+        { title: 'Солнцезащитные очки AH MEE, чёрные', price: '1 290 ₽', p: 'p2', level: 3, state: 'active' },
+        { title: 'Сертификат на массаж спины', price: '', p: '', level: 3, state: 'active' },
+        { title: 'Штатив K&F Concept K234A0 с шаровой головой BH-28L', price: '6 490 ₽', p: 'p6', level: 3, state: 'active' }
+      ],
+      done: st === 'alldone' ? [
+        { title: 'Карабины алюминиевые, 5 шт.', price: '349 ₽', p: 'p5', level: 2, state: 'gifted' },
+        { title: 'Очки квадратные, голубая оправа', price: '990 ₽', p: 'p4', level: 2, state: 'purchased' },
+        { title: 'Клетка SmallRig 3538B для Sony ZV-E10', price: '4 990 ₽', p: 'p3', level: 4, state: 'gifted' },
+        { title: 'Штатив K&F Concept K234A0', price: '6 490 ₽', p: 'p6', level: 3, state: 'purchased' }
+      ] : [
+        { title: 'Карабины алюминиевые, 5 шт.', price: '349 ₽', p: 'p5', level: 2, state: 'gifted' },
+        { title: 'Очки квадратные, голубая оправа', price: '990 ₽', p: 'p4', level: 2, state: 'purchased' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

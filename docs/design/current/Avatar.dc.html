@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Аватар</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<span role="img" aria-label="{{name}}" style="display: inline-flex; align-items: center; justify-content: center; width: {{size}}px; height: {{size}}px; border-radius: 999px; background: {{bg}}; color: #FFFFFF; font-family: Onest, sans-serif; font-size: {{fs}}px; font-weight: 700; box-shadow: 0 0 0 {{ring}}px {{ringColor}}; flex: none">{{ini}}</span>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"who":{"editor":"enum","options":["vitaly","olesya","anya","more"],"default":"vitaly"},"size":{"editor":"int","default":28},"ring":{"editor":"int","default":0},"ringColor":{"editor":"color","default":"#FFFFFF"},"more":{"editor":"text","default":"+2"},"$preview":{"width":40,"height":40}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = { vitaly: ['Виталий', 'В', 'linear-gradient(135deg, #B9A8FF, #8E78FF)'], olesya: ['Олеся', 'О', 'linear-gradient(135deg, #FFB98A, #F2766B)'], anya: ['Аня', 'А', 'linear-gradient(135deg, #8FD3B6, #3E9C7A)'], more: ['Ещё участники', this.props.more ?? '+2', '#5E6066'] };
+    const p = P[this.props.who ?? 'vitaly'] ?? P.vitaly;
+    const size = this.props.size ?? 28;
+    return { name: p[0], ini: p[1], bg: p[2], size, fs: Math.round(size * 0.42), ring: this.props.ring ?? 0, ringColor: this.props.ringColor ?? '#FFFFFF' };
+  }
+}
+</script>
+</body>
+</html>

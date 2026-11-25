@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Обложка списка</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<a href="{{href}}" style="display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; background: #FFFFFF; border-radius: 22px; padding: 6px; text-decoration: none; color: #17181C; font-family: Onest, sans-serif">
+<div style="position: relative; height: {{h}}px; border-radius: 17px; overflow: hidden">
+<sc-if value="{{hasPhotos}}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: {{cols}}; grid-template-rows: {{rows}}; gap: 3px; width: 100%; height: 100%">
+<sc-for list="{{cells}}" as="c" hint-placeholder-count="4"><div style="position: relative; grid-row: {{c.span}}; min-height: 0; min-width: 0; overflow: hidden; background: #F4F4EF"><img src="{{c.src}}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block"></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{empty}}">
+<div style="width: 100%; height: 100%; background: {{emptyBg}}; display: flex; align-items: center; justify-content: center">
+<dc-import name="ListIcon" kind="{{icon}}" color="{{color}}" size="26" box="52" hint-size="52px,52px"></dc-import>
+</div>
+</sc-if>
+<sc-if value="{{hasMembers}}"><span style="position: absolute; right: 8px; bottom: 8px; display: inline-flex"><dc-import name="AvatarStack" who="{{members}}" size="22" hint-size="56px,22px"></dc-import></span></sc-if>
+<sc-if value="{{hasDate}}"><span style="position: absolute; left: 8px; top: 8px; white-space: nowrap; font-size: 11px; font-weight: 700; color: #17181C; background: #FFFFFF; padding: 4px 9px; border-radius: 999px; box-shadow: 0 1px 3px rgba(23, 24, 28, 0.14)">{{date}}</span></sc-if>
+</div>
+<div style="padding: 0 8px 8px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 15px; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{title}}</span>
+<span style="font-size: 12px; color: #5E6066; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{meta}}</span>
+</div>
+</a>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"title":{"editor":"text","default":"Мои желания"},"meta":{"editor":"text","default":"12 желаний · 98 450 ₽"},"date":{"editor":"text","default":""},"photos":{"editor":null},"icon":{"editor":"text","default":"heart"},"color":{"editor":"text","default":"lavender"},"h":{"editor":"int","default":140},"href":{"editor":"text","default":"Mobile-List.dc.html"},"members":{"editor":null},"$preview":{"width":190,"height":210}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const photos = (this.props.photos ?? ['p1', 'p3', 'p2', 'p5']).slice(0, 4);
+    const n = photos.length;
+    const L = {
+      1: ['1fr', '1fr'], 2: ['1fr 1fr', '1fr'], 3: ['1fr 1fr', '1fr 1fr'], 4: ['1fr 1fr', '1fr 1fr']
+    }[n] ?? ['1fr 1fr', '1fr 1fr'];
+    const SRC = { p1: '/_blob/469af2bdbd969601fd8987c702f8c7aa', p2: '/_blob/3f5d836a287dd08dfc5d2f75a0f2e53b', p3: '/_blob/f25658efe17e73f758a76302c4077302', p4: '/_blob/e54b0aa006235c5f815fe0e014f464ff', p5: '/_blob/9dd5ad4fd07e6e2459673d541a820d4c', p6: '/_blob/03eedffd0817baec9d1af3bb68440273' };
+    const cells = photos.map((p, i) => ({ src: SRC[p] ?? '', span: (n === 3 && i === 0) ? 'span 2' : 'auto' }));
+    const bgs = { lavender: '#F5F2FF', lime: '#F5FBE6', pink: '#FFF2F5', blue: '#F0F6FF', peach: '#FFF5EC', mint: '#EEF9F3', sand: '#F8F5EE', gray: '#F4F4F1' };
+    const date = this.props.date ?? '';
+    const color = this.props.color ?? 'lavender';
+    return {
+      title: this.props.title ?? 'Мои желания',
+      meta: this.props.meta ?? '12 желаний · 98 450 ₽',
+      date, hasDate: date !== '',
+      cells, cols: L[0], rows: L[1],
+      hasPhotos: n > 0, empty: n === 0,
+      icon: this.props.icon ?? 'heart', color, emptyBg: bgs[color] ?? bgs.lavender,
+      h: this.props.h ?? 140,
+      href: this.props.href ?? 'Mobile-List.dc.html',
+      members: this.props.members ?? [], hasMembers: (this.props.members ?? []).length > 0
+    };
+  }
+}
+</script>
+</body>
+</html>

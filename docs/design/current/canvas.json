@@ -1,0 +1,1256 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-23T15:00:00Z"
+ },
+ "title": "me:wish — дизайн этапа 1",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Overview.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1400,
+   "h": 900,
+   "title": "Оглавление и последние изменения"
+  },
+  "Mobile-Login.dc.html": {
+   "x": 0,
+   "y": 2700,
+   "w": 390,
+   "h": 844,
+   "title": "1.1 · Вход",
+   "radius": 44
+  },
+  "Mobile-Login-Loading.dc.html": {
+   "x": 470,
+   "y": 2700,
+   "w": 390,
+   "h": 844,
+   "title": "1.2 · Вход — «Входим…»",
+   "radius": 44
+  },
+  "Mobile-Login-Error.dc.html": {
+   "x": 940,
+   "y": 2700,
+   "w": 390,
+   "h": 844,
+   "title": "1.3 · Вход — ошибка",
+   "radius": 44
+  },
+  "Mobile-FirstRun.dc.html": {
+   "x": 1410,
+   "y": 2700,
+   "w": 390,
+   "h": 844,
+   "title": "1.4 · Первый вход",
+   "radius": 44
+  },
+  "Shared-Accept-Login.dc.html": {
+   "x": 1880,
+   "y": 2700,
+   "w": 390,
+   "h": 844,
+   "title": "1.5 · Приглашение — не вошёл",
+   "radius": 44
+  },
+  "Shared-Accept.dc.html": {
+   "x": 2350,
+   "y": 2700,
+   "w": 390,
+   "h": 844,
+   "title": "1.6 · Приглашение — принять",
+   "radius": 44
+  },
+  "Shared-Accept-Expired.dc.html": {
+   "x": 2820,
+   "y": 2700,
+   "w": 390,
+   "h": 844,
+   "title": "1.7 · Приглашение не действует",
+   "radius": 44
+  },
+  "Shared-Joined.dc.html": {
+   "x": 3290,
+   "y": 2700,
+   "w": 390,
+   "h": 844,
+   "title": "1.8 · Тост «Вы присоединились»",
+   "radius": 44
+  },
+  "Desktop-Login.dc.html": {
+   "x": 0,
+   "y": 3704,
+   "w": 1440,
+   "h": 960,
+   "title": "1.1D · Вход (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-FirstRun.dc.html": {
+   "x": 1520,
+   "y": 3704,
+   "w": 1440,
+   "h": 960,
+   "title": "1.4D · Первый вход (компьютер)",
+   "expand": "fill"
+  },
+  "Shared-Accept-Login-Desktop.dc.html": {
+   "x": 3040,
+   "y": 3704,
+   "w": 1440,
+   "h": 960,
+   "title": "1.5D · Приглашение — не вошёл (компьютер)",
+   "expand": "fill"
+  },
+  "Shared-Accept-Desktop.dc.html": {
+   "x": 4560,
+   "y": 3704,
+   "w": 1440,
+   "h": 960,
+   "title": "1.6D · Приглашение — принять (компьютер)",
+   "expand": "fill"
+  },
+  "Shared-Accept-Expired-Desktop.dc.html": {
+   "x": 6080,
+   "y": 3704,
+   "w": 1440,
+   "h": 960,
+   "title": "1.7D · Приглашение не действует (компьютер)",
+   "expand": "fill"
+  },
+  "Main.dc.html": {
+   "x": 0,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.1 · Главная с разделами",
+   "radius": 44
+  },
+  "Mobile-Home-Loading.dc.html": {
+   "x": 470,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.2 · Главная — загрузка",
+   "radius": 44
+  },
+  "Mobile-List.dc.html": {
+   "x": 940,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.3 · Список",
+   "radius": 44
+  },
+  "Mobile-List-Empty.dc.html": {
+   "x": 1410,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.4 · Список — пустой",
+   "radius": 44
+  },
+  "Mobile-List-Loading.dc.html": {
+   "x": 1880,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.5 · Список — загрузка",
+   "radius": 44
+  },
+  "Mobile-List-Compact.dc.html": {
+   "x": 2350,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.6 · Список — без описания",
+   "radius": 44
+  },
+  "Mobile-List-DoneGroup.dc.html": {
+   "x": 2820,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.7 · Список — группа «Исполнено»",
+   "radius": 44
+  },
+  "Mobile-List-AllDone.dc.html": {
+   "x": 3290,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.8 · Список — исполнено всё",
+   "radius": 44
+  },
+  "Mobile-List-Sort.dc.html": {
+   "x": 3760,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.9 · Список — сортировка",
+   "radius": 44
+  },
+  "Mobile-List-Menu.dc.html": {
+   "x": 4230,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.10 · Список — меню «•••»",
+   "radius": 44
+  },
+  "Mobile-List-Menu-Last.dc.html": {
+   "x": 4700,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.11 · Меню единственного списка",
+   "radius": 44
+  },
+  "Mobile-List-DeleteConfirm.dc.html": {
+   "x": 5170,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.12 · Удаление списка — подтверждение",
+   "radius": 44
+  },
+  "Mobile-NewList.dc.html": {
+   "x": 5640,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.13 · Новый список",
+   "radius": 44
+  },
+  "Mobile-NewList-Date.dc.html": {
+   "x": 6110,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.14 · Новый список — календарь",
+   "radius": 44
+  },
+  "Mobile-ListSettings.dc.html": {
+   "x": 6580,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.15 · Настройки списка",
+   "radius": 44
+  },
+  "Shared-List-Mobile.dc.html": {
+   "x": 7050,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.17 · Совместный список — редактор",
+   "radius": 44
+  },
+  "Shared-List-Menu.dc.html": {
+   "x": 7520,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.18 · Совместный список — меню «•••»",
+   "radius": 44
+  },
+  "Shared-Viewer-List.dc.html": {
+   "x": 7990,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.19 · Список глазами зрителя",
+   "radius": 44
+  },
+  "Shared-Viewer-Menu.dc.html": {
+   "x": 8460,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.20 · Зритель — меню «•••»",
+   "radius": 44
+  },
+  "Shared-Members-One.dc.html": {
+   "x": 8930,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.21 · Участники — вы один",
+   "radius": 44
+  },
+  "Shared-Members.dc.html": {
+   "x": 9400,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.22 · Участники — несколько и ссылка",
+   "radius": 44
+  },
+  "Shared-Members-Menu.dc.html": {
+   "x": 9870,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.23 · Участники — меню участника",
+   "radius": 44
+  },
+  "Shared-Members-Viewer.dc.html": {
+   "x": 10340,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.24 · Участники у зрителя",
+   "radius": 44
+  },
+  "Shared-Invite-Role.dc.html": {
+   "x": 10810,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.25 · Пригласить — роль",
+   "radius": 44
+  },
+  "Shared-Invite-Link.dc.html": {
+   "x": 11280,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.26 · Пригласить — ссылка, тост",
+   "radius": 44
+  },
+  "Shared-Dialog-DeleteAll.dc.html": {
+   "x": 11750,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.27 · «Удалить у всех?»",
+   "radius": 44
+  },
+  "Shared-Dialog-Leave.dc.html": {
+   "x": 12220,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.28 · «Выйти из списка?»",
+   "radius": 44
+  },
+  "Shared-Dialog-LeaveLast.dc.html": {
+   "x": 12690,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.29 · «Вы последний редактор»",
+   "radius": 44
+  },
+  "Shared-Dialog-Remove.dc.html": {
+   "x": 13160,
+   "y": 5264,
+   "w": 390,
+   "h": 844,
+   "title": "2.30 · «Убрать Олесю?»",
+   "radius": 44
+  },
+  "Desktop-Home.dc.html": {
+   "x": 0,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.1D · Главная с разделами (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Home-Loading.dc.html": {
+   "x": 1520,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.2D · Главная — загрузка (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-List.dc.html": {
+   "x": 3040,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.3D · Список (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-List-Empty.dc.html": {
+   "x": 4560,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.4D · Список — пустой (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-List-Loading.dc.html": {
+   "x": 6080,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.5D · Список — загрузка (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-List-Sort.dc.html": {
+   "x": 7600,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.9D · Список — сортировка (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-List-Menu.dc.html": {
+   "x": 9120,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.10D · Список — меню «•••» (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-NewList.dc.html": {
+   "x": 10640,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.13D · Новый список (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-NewList-Date.dc.html": {
+   "x": 12160,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.14D · Новый список — календарь (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-ListSettings.dc.html": {
+   "x": 13680,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.15D · Настройки списка (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Home-ManyLists.dc.html": {
+   "x": 15200,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.16D · Много списков (компьютер)",
+   "expand": "fill"
+  },
+  "Shared-List-Desktop.dc.html": {
+   "x": 16720,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.17D · Совместный список (компьютер)",
+   "expand": "fill"
+  },
+  "Shared-Members-Desktop.dc.html": {
+   "x": 18240,
+   "y": 6268,
+   "w": 1440,
+   "h": 960,
+   "title": "2.22D · Участники — окно (компьютер)",
+   "expand": "fill"
+  },
+  "Mobile-Add-Empty.dc.html": {
+   "x": 0,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.1 · Новое желание — пусто",
+   "radius": 44
+  },
+  "Mobile-Add.dc.html": {
+   "x": 470,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.2 · Новое желание — заполнено",
+   "radius": 44
+  },
+  "Mobile-Add-Home.dc.html": {
+   "x": 940,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.3 · Форма — открыта с главной",
+   "radius": 44
+  },
+  "Mobile-Add-FromList.dc.html": {
+   "x": 1410,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.4 · Форма — открыта из списка",
+   "radius": 44
+  },
+  "Mobile-Crop.dc.html": {
+   "x": 1880,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.5 · Обрезка фото",
+   "radius": 44
+  },
+  "Mobile-Add-Uploading.dc.html": {
+   "x": 2350,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.6 · Фото загружается",
+   "radius": 44
+  },
+  "Mobile-Add-PhotoError.dc.html": {
+   "x": 2820,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.7 · Ошибка: не картинка",
+   "radius": 44
+  },
+  "Mobile-Add-PhotoTooBig.dc.html": {
+   "x": 3290,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.8 · Ошибка: больше 20 МБ",
+   "radius": 44
+  },
+  "Mobile-Add-PhotoSmall.dc.html": {
+   "x": 3760,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.9 · Предупреждение: маленькое фото",
+   "radius": 44
+  },
+  "Mobile-Add-NameError.dc.html": {
+   "x": 4230,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.10 · Пустое название",
+   "radius": 44
+  },
+  "Mobile-Add-Keyboard.dc.html": {
+   "x": 4700,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.11 · Форма с клавиатурой",
+   "radius": 44
+  },
+  "Mobile-Add-Discard.dc.html": {
+   "x": 5170,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.12 · «Не сохранять желание?»",
+   "radius": 44
+  },
+  "Shared-Add-ListPicker.dc.html": {
+   "x": 5640,
+   "y": 7828,
+   "w": 390,
+   "h": 844,
+   "title": "3.14 · Форма: выбор списка",
+   "radius": 44
+  },
+  "Desktop-Add.dc.html": {
+   "x": 0,
+   "y": 8832,
+   "w": 1440,
+   "h": 960,
+   "title": "3.2D · Новое желание (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Crop.dc.html": {
+   "x": 1520,
+   "y": 8832,
+   "w": 1440,
+   "h": 960,
+   "title": "3.5D · Обрезка фото (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Add-Drag.dc.html": {
+   "x": 3040,
+   "y": 8832,
+   "w": 1440,
+   "h": 960,
+   "title": "3.13D · Перетаскивание фото (компьютер)",
+   "expand": "fill"
+  },
+  "Mobile-Card.dc.html": {
+   "x": 0,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.1 · Карточка — шторка",
+   "radius": 44
+  },
+  "Mobile-Card-Priority.dc.html": {
+   "x": 470,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.2 · Выбор приоритета",
+   "radius": 44
+  },
+  "Mobile-Card-Status.dc.html": {
+   "x": 940,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.3 · Статус раскрыт",
+   "radius": 44
+  },
+  "Mobile-Card-Done.dc.html": {
+   "x": 1410,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.4 · Исполненная",
+   "radius": 44
+  },
+  "Mobile-Card-Long.dc.html": {
+   "x": 1880,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.5 · Длинные название и описание",
+   "radius": 44
+  },
+  "Mobile-Card-NoPhoto.dc.html": {
+   "x": 2350,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.6 · Без фото и цены",
+   "radius": 44
+  },
+  "Mobile-Card-NoLink.dc.html": {
+   "x": 2820,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.7 · Без ссылки и описания",
+   "radius": 44
+  },
+  "Mobile-Card-Menu.dc.html": {
+   "x": 3290,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.8 · Меню «•••»",
+   "radius": 44
+  },
+  "Mobile-Card-Move.dc.html": {
+   "x": 3760,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.9 · Переместить",
+   "radius": 44
+  },
+  "Mobile-Card-Edit.dc.html": {
+   "x": 4230,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.10 · Редактирование",
+   "radius": 44
+  },
+  "Mobile-Card-Edit-Discard.dc.html": {
+   "x": 4700,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.11 · «Не сохранять изменения?»",
+   "radius": 44
+  },
+  "Shared-Card-Author.dc.html": {
+   "x": 5170,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.12 · Карточка: «Добавила Олеся»",
+   "radius": 44
+  },
+  "Shared-Card-Viewer.dc.html": {
+   "x": 5640,
+   "y": 10392,
+   "w": 390,
+   "h": 844,
+   "title": "4.13 · Карточка у зрителя",
+   "radius": 44
+  },
+  "Desktop-Card.dc.html": {
+   "x": 0,
+   "y": 11396,
+   "w": 1440,
+   "h": 960,
+   "title": "4.1D · Карточка — окно (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Card-Priority.dc.html": {
+   "x": 1520,
+   "y": 11396,
+   "w": 1440,
+   "h": 960,
+   "title": "4.2D · Выбор приоритета (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Card-Menu.dc.html": {
+   "x": 3040,
+   "y": 11396,
+   "w": 1440,
+   "h": 960,
+   "title": "4.8D · Меню «•••» (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Card-Move.dc.html": {
+   "x": 4560,
+   "y": 11396,
+   "w": 1440,
+   "h": 960,
+   "title": "4.9D · Переместить (компьютер)",
+   "expand": "fill"
+  },
+  "Mobile-Profile.dc.html": {
+   "x": 0,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.1 · Профиль",
+   "radius": 44
+  },
+  "Mobile-Profile-Name.dc.html": {
+   "x": 470,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.2 · Профиль — имя",
+   "radius": 44
+  },
+  "Mobile-Profile-Avatar.dc.html": {
+   "x": 940,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.3 · Профиль — фото",
+   "radius": 44
+  },
+  "Mobile-Avatar-Crop.dc.html": {
+   "x": 1410,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.4 · Фото профиля — обрезка",
+   "radius": 44
+  },
+  "Mobile-Profile-AvatarError.dc.html": {
+   "x": 1880,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.5 · Ошибка загрузки фото",
+   "radius": 44
+  },
+  "Mobile-Profile-DefaultList.dc.html": {
+   "x": 2350,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.6 · Список по умолчанию",
+   "radius": 44
+  },
+  "Mobile-Trash.dc.html": {
+   "x": 2820,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.7 · Корзина",
+   "radius": 44
+  },
+  "Mobile-Trash-Empty.dc.html": {
+   "x": 3290,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.8 · Корзина — пусто",
+   "radius": 44
+  },
+  "Mobile-Trash-Restore.dc.html": {
+   "x": 3760,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.9 · Восстановить в список",
+   "radius": 44
+  },
+  "Mobile-Trash-Clear.dc.html": {
+   "x": 4230,
+   "y": 12956,
+   "w": 390,
+   "h": 844,
+   "title": "5.10 · Очистить корзину",
+   "radius": 44
+  },
+  "Desktop-Profile.dc.html": {
+   "x": 0,
+   "y": 13960,
+   "w": 1440,
+   "h": 960,
+   "title": "5.1D · Профиль (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Profile-Name.dc.html": {
+   "x": 1520,
+   "y": 13960,
+   "w": 1440,
+   "h": 960,
+   "title": "5.2D · Профиль — имя (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Avatar-Crop.dc.html": {
+   "x": 3040,
+   "y": 13960,
+   "w": 1440,
+   "h": 960,
+   "title": "5.4D · Фото профиля — обрезка (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Profile-DefaultList.dc.html": {
+   "x": 4560,
+   "y": 13960,
+   "w": 1440,
+   "h": 960,
+   "title": "5.6D · Список по умолчанию (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Trash.dc.html": {
+   "x": 6080,
+   "y": 13960,
+   "w": 1440,
+   "h": 960,
+   "title": "5.7D · Корзина (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-Trash-Empty.dc.html": {
+   "x": 7600,
+   "y": 13960,
+   "w": 1440,
+   "h": 960,
+   "title": "5.8D · Корзина — пусто (компьютер)",
+   "expand": "fill"
+  },
+  "Desktop-ProfileMenu.dc.html": {
+   "x": 9120,
+   "y": 13960,
+   "w": 1440,
+   "h": 960,
+   "title": "5.11D · Меню профиля (компьютер)",
+   "expand": "fill"
+  },
+  "Mobile-Offline.dc.html": {
+   "x": 0,
+   "y": 15520,
+   "w": 390,
+   "h": 844,
+   "title": "6.1 · Нет интернета",
+   "radius": 44
+  },
+  "Mobile-NotFound.dc.html": {
+   "x": 470,
+   "y": 15520,
+   "w": 390,
+   "h": 844,
+   "title": "6.2 · Страница не найдена",
+   "radius": 44
+  },
+  "Mobile-InstallHint.dc.html": {
+   "x": 940,
+   "y": 15520,
+   "w": 390,
+   "h": 844,
+   "title": "6.3 · Подсказка «На экран «Домой»»",
+   "radius": 44
+  },
+  "Mobile-List-Added.dc.html": {
+   "x": 1410,
+   "y": 15520,
+   "w": 390,
+   "h": 844,
+   "title": "6.4 · Тост «Добавлено»",
+   "radius": 44
+  },
+  "Mobile-List-Deleted.dc.html": {
+   "x": 1880,
+   "y": 15520,
+   "w": 390,
+   "h": 844,
+   "title": "6.5 · Тост «Удалено · Отменить»",
+   "radius": 44
+  },
+  "Desktop-NotFound.dc.html": {
+   "x": 0,
+   "y": 16524,
+   "w": 1440,
+   "h": 960,
+   "title": "6.2D · Страница не найдена (компьютер)",
+   "expand": "fill"
+  },
+  "Spec-Foundations.dc.html": {
+   "x": 0,
+   "y": 18084,
+   "w": 1400,
+   "h": 980,
+   "title": "7.1 · Цвета, шрифты, отступы, скругления, тени"
+  },
+  "Spec-Components.dc.html": {
+   "x": 1480,
+   "y": 18084,
+   "w": 1400,
+   "h": 900,
+   "title": "7.2 · Элементы"
+  },
+  "Spec-Cards.dc.html": {
+   "x": 2960,
+   "y": 18084,
+   "w": 1400,
+   "h": 1000,
+   "title": "7.3 · Карточки и обложки"
+  },
+  "Spec-Navigation.dc.html": {
+   "x": 4440,
+   "y": 18084,
+   "w": 1400,
+   "h": 560,
+   "title": "7.4 · Меню, приоритет, календарь"
+  },
+  "Spec-Feedback.dc.html": {
+   "x": 5920,
+   "y": 18084,
+   "w": 1400,
+   "h": 700,
+   "title": "7.5 · Диалог, тосты, плашка, скелетоны"
+  },
+  "Spec-CodeTable.dc.html": {
+   "x": 7400,
+   "y": 18084,
+   "w": 1400,
+   "h": 2600,
+   "title": "7.6 · Таблица «Код → файл»"
+  },
+  "WishCard.dc.html": {
+   "x": 0,
+   "y": 20884,
+   "w": 180,
+   "h": 280,
+   "title": "7.7 · Компонент: карточка"
+  },
+  "Cover.dc.html": {
+   "x": 260,
+   "y": 20884,
+   "w": 190,
+   "h": 210,
+   "title": "7.8 · Компонент: обложка"
+  },
+  "Photo.dc.html": {
+   "x": 530,
+   "y": 20884,
+   "w": 200,
+   "h": 200,
+   "title": "7.9 · Компонент: фото"
+  },
+  "Hearts.dc.html": {
+   "x": 810,
+   "y": 20884,
+   "w": 160,
+   "h": 40,
+   "title": "7.10 · Компонент: сердечки"
+  },
+  "ListIcon.dc.html": {
+   "x": 1050,
+   "y": 20884,
+   "w": 40,
+   "h": 40,
+   "title": "7.11 · Компонент: иконка списка"
+  },
+  "DatePicker.dc.html": {
+   "x": 1170,
+   "y": 20884,
+   "w": 320,
+   "h": 390,
+   "title": "7.12 · Компонент: календарь"
+  },
+  "Toast.dc.html": {
+   "x": 1570,
+   "y": 20884,
+   "w": 360,
+   "h": 60,
+   "title": "7.13 · Компонент: тост"
+  },
+  "Dialog.dc.html": {
+   "x": 2010,
+   "y": 20884,
+   "w": 342,
+   "h": 200,
+   "title": "7.14 · Компонент: диалог"
+  },
+  "Sidebar.dc.html": {
+   "x": 2432,
+   "y": 20884,
+   "w": 260,
+   "h": 936,
+   "title": "7.15 · Компонент: боковое меню"
+  },
+  "Avatar.dc.html": {
+   "x": 2772,
+   "y": 20884,
+   "w": 40,
+   "h": 40,
+   "title": "7.16 · Компонент: аватар"
+  },
+  "AvatarStack.dc.html": {
+   "x": 2892,
+   "y": 20884,
+   "w": 80,
+   "h": 30,
+   "title": "7.17 · Компонент: аватары участников"
+  },
+  "Members.dc.html": {
+   "x": 3052,
+   "y": 20884,
+   "w": 390,
+   "h": 560,
+   "title": "7.18 · Компонент: участники"
+  },
+  "Invite.dc.html": {
+   "x": 3522,
+   "y": 20884,
+   "w": 390,
+   "h": 480,
+   "title": "7.19 · Компонент: пригласить"
+  },
+  "InviteCard.dc.html": {
+   "x": 3992,
+   "y": 20884,
+   "w": 350,
+   "h": 260,
+   "title": "7.20 · Компонент: карточка приглашения"
+  }
+ },
+ "order": [
+  "Overview.dc.html",
+  "Mobile-Login.dc.html",
+  "Mobile-Login-Loading.dc.html",
+  "Mobile-Login-Error.dc.html",
+  "Mobile-FirstRun.dc.html",
+  "Shared-Accept-Login.dc.html",
+  "Shared-Accept.dc.html",
+  "Shared-Accept-Expired.dc.html",
+  "Shared-Joined.dc.html",
+  "Desktop-Login.dc.html",
+  "Desktop-FirstRun.dc.html",
+  "Shared-Accept-Login-Desktop.dc.html",
+  "Shared-Accept-Desktop.dc.html",
+  "Shared-Accept-Expired-Desktop.dc.html",
+  "Main.dc.html",
+  "Mobile-Home-Loading.dc.html",
+  "Mobile-List.dc.html",
+  "Mobile-List-Empty.dc.html",
+  "Mobile-List-Loading.dc.html",
+  "Mobile-List-Compact.dc.html",
+  "Mobile-List-DoneGroup.dc.html",
+  "Mobile-List-AllDone.dc.html",
+  "Mobile-List-Sort.dc.html",
+  "Mobile-List-Menu.dc.html",
+  "Mobile-List-Menu-Last.dc.html",
+  "Mobile-List-DeleteConfirm.dc.html",
+  "Mobile-NewList.dc.html",
+  "Mobile-NewList-Date.dc.html",
+  "Mobile-ListSettings.dc.html",
+  "Shared-List-Mobile.dc.html",
+  "Shared-List-Menu.dc.html",
+  "Shared-Viewer-List.dc.html",
+  "Shared-Viewer-Menu.dc.html",
+  "Shared-Members-One.dc.html",
+  "Shared-Members.dc.html",
+  "Shared-Members-Menu.dc.html",
+  "Shared-Members-Viewer.dc.html",
+  "Shared-Invite-Role.dc.html",
+  "Shared-Invite-Link.dc.html",
+  "Shared-Dialog-DeleteAll.dc.html",
+  "Shared-Dialog-Leave.dc.html",
+  "Shared-Dialog-LeaveLast.dc.html",
+  "Shared-Dialog-Remove.dc.html",
+  "Desktop-Home.dc.html",
+  "Desktop-Home-Loading.dc.html",
+  "Desktop-List.dc.html",
+  "Desktop-List-Empty.dc.html",
+  "Desktop-List-Loading.dc.html",
+  "Desktop-List-Sort.dc.html",
+  "Desktop-List-Menu.dc.html",
+  "Desktop-NewList.dc.html",
+  "Desktop-NewList-Date.dc.html",
+  "Desktop-ListSettings.dc.html",
+  "Desktop-Home-ManyLists.dc.html",
+  "Shared-List-Desktop.dc.html",
+  "Shared-Members-Desktop.dc.html",
+  "Mobile-Add-Empty.dc.html",
+  "Mobile-Add.dc.html",
+  "Mobile-Add-Home.dc.html",
+  "Mobile-Add-FromList.dc.html",
+  "Mobile-Crop.dc.html",
+  "Mobile-Add-Uploading.dc.html",
+  "Mobile-Add-PhotoError.dc.html",
+  "Mobile-Add-PhotoTooBig.dc.html",
+  "Mobile-Add-PhotoSmall.dc.html",
+  "Mobile-Add-NameError.dc.html",
+  "Mobile-Add-Keyboard.dc.html",
+  "Mobile-Add-Discard.dc.html",
+  "Shared-Add-ListPicker.dc.html",
+  "Desktop-Add.dc.html",
+  "Desktop-Crop.dc.html",
+  "Desktop-Add-Drag.dc.html",
+  "Mobile-Card.dc.html",
+  "Mobile-Card-Priority.dc.html",
+  "Mobile-Card-Status.dc.html",
+  "Mobile-Card-Done.dc.html",
+  "Mobile-Card-Long.dc.html",
+  "Mobile-Card-NoPhoto.dc.html",
+  "Mobile-Card-NoLink.dc.html",
+  "Mobile-Card-Menu.dc.html",
+  "Mobile-Card-Move.dc.html",
+  "Mobile-Card-Edit.dc.html",
+  "Mobile-Card-Edit-Discard.dc.html",
+  "Shared-Card-Author.dc.html",
+  "Shared-Card-Viewer.dc.html",
+  "Desktop-Card.dc.html",
+  "Desktop-Card-Priority.dc.html",
+  "Desktop-Card-Menu.dc.html",
+  "Desktop-Card-Move.dc.html",
+  "Mobile-Profile.dc.html",
+  "Mobile-Profile-Name.dc.html",
+  "Mobile-Profile-Avatar.dc.html",
+  "Mobile-Avatar-Crop.dc.html",
+  "Mobile-Profile-AvatarError.dc.html",
+  "Mobile-Profile-DefaultList.dc.html",
+  "Mobile-Trash.dc.html",
+  "Mobile-Trash-Empty.dc.html",
+  "Mobile-Trash-Restore.dc.html",
+  "Mobile-Trash-Clear.dc.html",
+  "Desktop-Profile.dc.html",
+  "Desktop-Profile-Name.dc.html",
+  "Desktop-Avatar-Crop.dc.html",
+  "Desktop-Profile-DefaultList.dc.html",
+  "Desktop-Trash.dc.html",
+  "Desktop-Trash-Empty.dc.html",
+  "Desktop-ProfileMenu.dc.html",
+  "Mobile-Offline.dc.html",
+  "Mobile-NotFound.dc.html",
+  "Mobile-InstallHint.dc.html",
+  "Mobile-List-Added.dc.html",
+  "Mobile-List-Deleted.dc.html",
+  "Desktop-NotFound.dc.html",
+  "Spec-Foundations.dc.html",
+  "Spec-Components.dc.html",
+  "Spec-Cards.dc.html",
+  "Spec-Navigation.dc.html",
+  "Spec-Feedback.dc.html",
+  "Spec-CodeTable.dc.html",
+  "WishCard.dc.html",
+  "Cover.dc.html",
+  "Photo.dc.html",
+  "Hearts.dc.html",
+  "ListIcon.dc.html",
+  "DatePicker.dc.html",
+  "Toast.dc.html",
+  "Dialog.dc.html",
+  "Sidebar.dc.html",
+  "Avatar.dc.html",
+  "AvatarStack.dc.html",
+  "Members.dc.html",
+  "Invite.dc.html",
+  "InviteCard.dc.html"
+ ],
+ "notes": {
+  "toc": {
+   "x": 0,
+   "y": 0,
+   "text": "ME:WISH — дизайн продукта",
+   "kind": "title1",
+   "maxW": 1400
+  },
+  "s0": {
+   "x": 0,
+   "y": 1500,
+   "text": "0 · На согласовании",
+   "kind": "title1",
+   "maxW": 2000
+  },
+  "s0empty": {
+   "x": 0,
+   "y": 1800,
+   "w": 420,
+   "text": "Пока пусто. Новые и изменённые экраны появятся здесь до утверждения.",
+   "fill": "gray"
+  },
+  "s1": {
+   "x": 0,
+   "y": 2400,
+   "text": "1 · Вход и первый запуск",
+   "kind": "title1",
+   "maxW": 7520
+  },
+  "s2": {
+   "x": 0,
+   "y": 4964,
+   "text": "2 · Главная и списки",
+   "kind": "title1",
+   "maxW": 19680
+  },
+  "s3": {
+   "x": 0,
+   "y": 7528,
+   "text": "3 · Добавление желания и фото",
+   "kind": "title1",
+   "maxW": 6030
+  },
+  "s4": {
+   "x": 0,
+   "y": 10092,
+   "text": "4 · Карточка желания",
+   "kind": "title1",
+   "maxW": 6030
+  },
+  "s5": {
+   "x": 0,
+   "y": 12656,
+   "text": "5 · Профиль и корзина",
+   "kind": "title1",
+   "maxW": 10560
+  },
+  "s6": {
+   "x": 0,
+   "y": 15220,
+   "text": "6 · Общие состояния",
+   "kind": "title1",
+   "maxW": 2270
+  },
+  "s7": {
+   "x": 0,
+   "y": 17784,
+   "text": "7 · Спецификация",
+   "kind": "title1",
+   "maxW": 7400
+  }
+ },
+ "designSystems": []
+}

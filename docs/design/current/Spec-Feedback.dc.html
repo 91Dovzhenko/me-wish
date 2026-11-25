@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Спецификация — обратная связь</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1400px; box-sizing: border-box; padding: 48px; background: #F4F4EF; font-family: Onest, sans-serif; color: #17181C; display: grid; grid-template-columns: 360px 380px 1fr; gap: 48px; align-items: start">
+<section style="display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Диалог подтверждения</h2>
+<dc-import name="Dialog" title="Удалить список и 8 желаний?" body="Желания попадут в корзину, их можно восстановить 30 дней." primary="Удалить" secondary="Отмена" hint-size="342px,210px"></dc-import>
+<dc-import name="Dialog" title="Не сохранять желание?" body="Введённые данные пропадут." primary="Не сохранять" secondary="Продолжить" hint-size="342px,180px"></dc-import>
+<span style="font-size: 12px; color: #5E6066">Слева — отмена (серая), справа — действие. Опасное действие красное, обычное — лаймовое. Фон затемняется на 40%.</span>
+</section>
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Тосты</h2>
+<dc-import name="Toast" text="Добавлено в «Мои желания»" action="Открыть" hint-size="360px,52px"></dc-import>
+<dc-import name="Toast" text="Сохранено" hint-size="360px,52px"></dc-import>
+<dc-import name="Toast" text="Удалено" action="Отменить" hint-size="360px,52px"></dc-import>
+<dc-import name="Toast" text="Не получилось сохранить — проверьте интернет" kind="error" hint-size="360px,64px"></dc-import>
+<span style="font-size: 12px; color: #5E6066">Внизу экрана, слева от кнопки «+». Пропадает через 4 секунды, с действием — через 6.</span>
+<h2 style="margin: 16px 0 0; font-size: 20px; font-weight: 700">Нет интернета</h2>
+<div role="status" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px; background: #17181C; color: #FFFFFF; font-size: 13px; font-weight: 500"><svg width="16" height="16" viewBox="0 0 24 24" style="flex: none; stroke:#FFB4A9;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.2-2.7M19 13a10 10 0 0 0-2.5-1.7M12 20h.01"></path></svg>Нет интернета — изменения не сохранятся</div>
+<span style="font-size: 12px; color: #5E6066">Плашка сверху экрана, пока нет связи.</span>
+</section>
+<section style="display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">Загрузка (скелетоны)</h2>
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px">
+<div aria-hidden="true" style="background: #FFFFFF; border-radius: 22px; padding: 6px; display: flex; flex-direction: column; gap: 8px"><div style="height: 120px; border-radius: 17px; background: #EEEDE8"></div><div style="margin: 0 8px; height: 14px; width: 70%; border-radius: 7px; background: #EEEDE8"></div><div style="margin: 0 8px 8px; height: 10px; width: 50%; border-radius: 5px; background: #F2F1EC"></div></div>
+<div aria-hidden="true" style="background: #FFFFFF; border-radius: 20px; padding: 6px 6px 12px; display: flex; flex-direction: column; gap: 8px"><div style="aspect-ratio: 1 / 1; border-radius: 15px; background: #EEEDE8"></div><div style="margin: 0 6px; height: 14px; width: 45%; border-radius: 7px; background: #EEEDE8"></div><div style="margin: 0 6px; height: 10px; width: 85%; border-radius: 5px; background: #F2F1EC"></div></div>
+<div aria-hidden="true" style="display: flex; flex-direction: column; gap: 8px; padding-top: 6px"><div style="width: 80%; height: 14px; border-radius: 7px; background: #E6E5DF"></div><div style="width: 100%; height: 22px; border-radius: 11px; background: #E9E9E3"></div></div>
+</div>
+<span style="font-size: 12px; color: #5E6066">Обложка, карточка, строка сводки. Цвета #EEEDE8 и #F2F1EC, без анимации-мигания или с мягким переливом.</span>
+<h2 style="margin: 16px 0 0; font-size: 20px; font-weight: 700">Ошибки и предупреждения в форме</h2>
+<div role="alert" style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #FFF1EF; color: #B42318; font-size: 13px; font-weight: 500">Это не картинка. Выберите JPG, PNG или HEIC</div>
+<div role="status" style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #FFF6E5; color: #8A5A00; font-size: 13px; font-weight: 500">Фото маленькое — может быть нечётким</div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

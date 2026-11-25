@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Профиль — компьютер</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="position: relative; width: 100%; min-height: 960px; box-sizing: border-box; background: #F4F4EF; font-family: Onest, sans-serif; color: #17181C; padding: 12px; display: flex; gap: 12px">
+<div style="flex: none; display: flex"><dc-import name="Sidebar" active="profile" hint-size="260px,936px"></dc-import></div>
+<main style="flex: 1; min-width: 0; box-sizing: border-box; background: transparent; border-radius: 32px; padding: 36px 32px 48px; display: flex; flex-direction: column; gap: 22px">
+<h1 style="margin: 0; font-family: Unbounded, sans-serif; font-size: 30px; font-weight: 600; letter-spacing: -0.03em">Профиль</h1>
+<div style="max-width: 620px; display: flex; flex-direction: column; gap: 14px">
+<section style="display: flex; align-items: center; gap: 18px; padding: 20px; border-radius: 24px; background: #FFFFFF">
+<button type="button" aria-label="Загрузить фото профиля" style="position: relative; width: 84px; height: 84px; flex: none; border: none; border-radius: 999px; background: linear-gradient(135deg, #B9A8FF, #8E78FF); color: #FFFFFF; font-family: Onest, sans-serif; font-weight: 700; font-size: 26px; cursor: pointer">ВД<span aria-hidden="true" style="position: absolute; right: -2px; bottom: -2px; width: 30px; height: 30px; border-radius: 999px; background: #17181C; box-shadow: 0 0 0 3px #F7F7F3; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" style="stroke:#FFFFFF;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path></svg></span></button>
+<sc-if value="{{viewName}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 4px"><a href="Desktop-Profile-Name.dc.html" style="display: inline-flex; align-items: center; gap: 8px; color: #17181C; text-decoration: none; font-size: 22px; font-weight: 700; white-space: nowrap">Виталий<svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#5E6066;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"></path></svg></a><span style="font-size: 13px; color: #5E6066">Нажмите на фото, чтобы загрузить новое</span></div></sc-if>
+<sc-if value="{{editName}}"><div style="flex: 1; display: flex; flex-direction: column; gap: 6px"><label for="nm" style="font-size: 13px; font-weight: 600">Имя</label><div style="display: flex; gap: 8px"><input id="nm" type="text" value="Виталий" style="flex: 1; min-width: 0; height: 48px; box-sizing: border-box; border: 1.5px solid #17181C; border-radius: 14px; padding: 0 14px; font-family: Onest, sans-serif; font-size: 16px; color: #17181C; background: #FFFFFF"><a href="Desktop-Profile.dc.html" style="height: 48px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 14px; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px #E2E1DB; color: #17181C; text-decoration: none; font-size: 14px; font-weight: 600">Отмена</a><button type="button" style="height: 48px; padding: 0 18px; border: none; border-radius: 14px; background: #C8F56A; font-family: Onest, sans-serif; font-size: 14px; font-weight: 700; color: #17181C; cursor: pointer">Сохранить</button></div></div></sc-if>
+</section>
+<section aria-label="Способ входа" style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-radius: 20px; background: #FFFFFF">
+<span style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #E6F0FF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" style="fill:#1E4FA8" aria-hidden="true"><path d="M21.5 4.2L2.9 11.4c-1 .4-1 1.6.1 1.9l4.6 1.4 1.8 5.5c.3.8 1.2 1 1.8.4l2.6-2.4 4.8 3.5c.7.5 1.6.1 1.8-.7l3.2-15.2c.2-1-.8-1.8-1.9-1.4zM9.6 14.2l8.2-6.4-6.6 7.4-.3 3-1.3-4z"></path></svg></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Telegram</span><span style="font-size: 13px; color: #5E6066">Вход выполнен через него</span></span>
+</section>
+<section style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-radius: 20px; background: #FFFFFF">
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Список по умолчанию</span><span style="font-size: 13px; color: #5E6066">Сюда попадают желания, добавленные с главной и через бота</span></span>
+<a href="Desktop-Profile-DefaultList.dc.html" aria-haspopup="listbox" style="flex: none; display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 12px 0 8px; border-radius: 14px; background: #FFFFFF; box-shadow: inset 0 0 0 1.5px {{listBorder}}; color: #17181C; text-decoration: none; font-size: 15px; font-weight: 600; white-space: nowrap"><dc-import name="ListIcon" kind="heart" color="lavender" size="15" box="30" hint-size="30px,30px"></dc-import>Мои желания<svg width="14" height="14" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a>
+<sc-if value="{{showList}}">
+<div role="listbox" aria-label="Список по умолчанию" style="position: absolute; z-index: 5; right: 20px; top: 74px; width: 260px; background: #FFFFFF; border-radius: 18px; padding: 6px; box-shadow: 0 16px 40px rgba(23, 24, 28, 0.18), 0 0 0 1px #EEEDE8; display: flex; flex-direction: column">
+<sc-for list="{{lists}}" as="l" hint-placeholder-count="4"><button type="button" role="option" aria-selected="{{l.sel}}" style="display: flex; align-items: center; gap: 10px; height: 48px; border: none; border-radius: 12px; padding: 0 10px 0 8px; background: {{l.bg}}; font-family: Onest, sans-serif; color: #17181C; cursor: pointer; text-align: left"><dc-import name="ListIcon" kind="{{l.icon}}" color="{{l.color}}" size="15" box="30" hint-size="30px,30px"></dc-import><span style="flex: 1; font-size: 14px; font-weight: 600; white-space: nowrap">{{l.title}}</span><sc-if value="{{l.on}}"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#17181C;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></sc-if></button></sc-for>
+</div>
+</sc-if>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["view","name","defaultList"],"default":"view"},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.props.state ?? 'view';
+    const raw = [
+      { title: 'Мои желания', icon: 'heart', color: 'lavender' },
+      { title: 'День рождения', icon: 'cake', color: 'pink' },
+      { title: 'Для поездок', icon: 'plane', color: 'blue' },
+      { title: 'Новый год', icon: 'tree', color: 'mint' }
+    ];
+    return {
+      viewName: st !== 'name', editName: st === 'name', showList: st === 'defaultList',
+      listBorder: st === 'defaultList' ? '#17181C' : '#E2E1DB',
+      lists: raw.map((l, i) => ({ ...l, on: i === 0, sel: i === 0 ? 'true' : 'false', bg: i === 0 ? '#F4F4EF' : 'transparent' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

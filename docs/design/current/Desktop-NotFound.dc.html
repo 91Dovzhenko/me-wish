@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Страница не найдена — компьютер</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 100%; min-height: 960px; box-sizing: border-box; background: #F4F4EF; font-family: Onest, sans-serif; color: #17181C; padding: 12px; display: flex; gap: 12px">
+<div style="flex: none; display: flex"><dc-import name="Sidebar" active="none" hint-size="260px,936px"></dc-import></div>
+<main style="flex: 1; min-width: 0; background: transparent; border-radius: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 40px; text-align: center">
+<span aria-hidden="true" style="font-family: Unbounded, sans-serif; font-size: 96px; font-weight: 600; letter-spacing: -0.04em; color: #B9A8FF; line-height: 1">404</span>
+<h1 style="margin: 0; font-size: 24px; font-weight: 700">Страница не найдена</h1>
+<p style="margin: 0; font-size: 15px; color: #5E6066; line-height: 1.45; max-width: 300px">Возможно, ссылка устарела или список удалили.</p>
+<a href="Desktop-Home.dc.html" style="margin-top: 8px; height: 52px; display: inline-flex; align-items: center; padding: 0 24px; border-radius: 16px; background: #C8F56A; color: #17181C; text-decoration: none; font-size: 16px; font-weight: 700">На главную</a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Приоритет — сердечки</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="display: inline-flex; align-items: center; gap: {{gap}}px; font-family: Onest, sans-serif">
+<sc-for list="{{hearts}}" as="h" hint-placeholder-count="5">
+<sc-if value="{{h.on}}" hint-placeholder-val="{{ true }}"><svg width="{{size}}" height="{{size}}" viewBox="0 0 24 24" style="fill:#6E56F0;stroke:#6E56F0;stroke-width:1.5;stroke-linejoin:round" aria-hidden="true"><path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z"></path></svg></sc-if>
+<sc-if value="{{h.off}}"><svg width="{{size}}" height="{{size}}" viewBox="0 0 24 24" style="fill:none;stroke:#C9C2EE;stroke-width:1.5;stroke-linejoin:round" aria-hidden="true"><path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z"></path></svg></sc-if>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"level":{"editor":"int","min":1,"max":5,"default":3},"size":{"editor":"int","default":14},"gap":{"editor":"int","default":2},"$preview":{"width":160,"height":40}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const level = this.props.level ?? 3;
+    const hearts = [1, 2, 3, 4, 5].map((i) => ({ on: i <= level, off: i > level }));
+    return { hearts, size: this.props.size ?? 14, gap: this.props.gap ?? 2 };
+  }
+}
+</script>
+</body>
+</html>

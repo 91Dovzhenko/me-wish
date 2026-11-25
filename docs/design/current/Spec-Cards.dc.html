@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Спецификация — карточки и обложки</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div style="width: 1400px; box-sizing: border-box; padding: 48px; background: #F4F4EF; font-family: Onest, sans-serif; color: #17181C; display: flex; flex-direction: column; gap: 32px">
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 22px; font-weight: 700">Карточка желания</h2>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; align-items: start">
+<sc-for list="{{cards}}" as="c" hint-placeholder-count="6"><div style="display: flex; flex-direction: column; gap: 8px"><dc-import name="WishCard" title="{{c.title}}" price="{{c.price}}" p="{{c.p}}" level="{{c.level}}" status="{{c.state}}" hint-size="100%,290px"></dc-import><span style="font-size: 12px; color: #5E6066; padding: 0 4px">{{c.note}}</span></div></sc-for>
+</div>
+<div style="display: flex; gap: 16px; align-items: flex-start"><div style="width: 200px; flex: none"><dc-import name="WishCard" title="Клетка SmallRig 3538B для Sony ZV-E10" price="4 990 ₽" p="p3" level="4" status="active" framed="{{ true }}" hint-size="200px,320px"></dc-import></div><span style="font-size: 13px; color: #5E6066; padding-top: 8px">На компьютере карточка в сетке — отдельный блок с тонкой рамкой #E6E5DF и внутренним отступом 8 px, как на маркетплейсе.</span></div>
+<span style="font-size: 13px; color: #5E6066">Квадрат фото → цена → название (до 2 строк, дальше «…») → сердечки. Без фото — серая заглушка с подарком. Без цены — «Без цены». Исполненная — фото и текст приглушены, чёрная метка.</span>
+</section>
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-size: 22px; font-weight: 700">Обложка списка</h2>
+<div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; align-items: start">
+<sc-for list="{{covers}}" as="c" hint-placeholder-count="5"><div style="display: flex; flex-direction: column; gap: 8px"><dc-import name="Cover" title="{{c.title}}" meta="{{c.meta}}" date="{{c.date}}" photos="{{c.photos}}" icon="{{c.icon}}" color="{{c.color}}" h="170" hint-size="100%,230px"></dc-import><span style="font-size: 12px; color: #5E6066; padding: 0 4px">{{c.note}}</span></div></sc-for>
+</div>
+<span style="font-size: 13px; color: #5E6066">Фото берутся из последних добавленных желаний. Все обложки одного размера: название в одну строку, дата — меткой в углу. Пустой список — иконка на цвете списка.</span>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      cards: [
+        { title: 'Штатив K&F Concept K254A7 с видеоголовой FH-03', price: '11 990 ₽', p: 'p1', level: 5, state: 'active', note: 'С фото, «Мечта»' },
+        { title: 'Солнцезащитные очки AH MEE, чёрные', price: '1 290 ₽', p: 'p2', level: 3, state: 'active', note: 'Обычная' },
+        { title: 'Сертификат на массаж спины', price: '3 500 ₽', p: '', level: 3, state: 'active', note: 'Без фото' },
+        { title: 'Клетка SmallRig 3538B', price: '', p: 'p3', level: 4, state: 'active', note: 'Без цены' },
+        { title: 'Клетка SmallRig 3538B для Sony ZV-E10 с боковой рукояткой и креплениями для аксессуаров', price: '4 990 ₽', p: 'p3', level: 2, state: 'active', note: 'Длинное название' },
+        { title: 'Очки квадратные, голубая оправа', price: '990 ₽', p: 'p4', level: 2, state: 'purchased', note: 'Исполненная' }
+      ],
+      covers: [
+        { title: 'Мои желания', meta: '7 желаний · 24 760 ₽', date: '', photos: ['p1', 'p3', 'p2', 'p5'], icon: 'heart', color: 'lavender', note: '4 фото — сетка 2×2' },
+        { title: 'День рождения', meta: '8 желаний · 61 200 ₽', date: '14 марта', photos: ['p6', 'p4', 'p3'], icon: 'cake', color: 'pink', note: '3 фото — большое слева + два справа, с датой' },
+        { title: 'Для поездок', meta: '2 желания · 1 639 ₽', date: '', photos: ['p5', 'p4'], icon: 'plane', color: 'blue', note: '2 фото — две половины' },
+        { title: 'Идеи подарков для мамы и папы на годовщину', meta: '1 желание · 6 490 ₽', date: '', photos: ['p6'], icon: 'gift', color: 'peach', note: '1 фото — на всю обложку, длинное название' },
+        { title: 'Новый год', meta: 'Пока пусто', date: '31 декабря', photos: [], icon: 'tree', color: 'mint', note: 'Пустой + дата' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

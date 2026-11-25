@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Календарь</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+
+<div role="dialog" aria-label="Выбор даты" style="width: 320px; box-sizing: border-box; background: #17181C; border-radius: 24px; padding: 14px 14px 8px; color: #FFFFFF; font-family: Onest, sans-serif; box-shadow: 0 20px 50px rgba(23, 24, 28, 0.35); display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px 4px">
+<button type="button" aria-label="Предыдущий месяц" style="width: 40px; height: 40px; border: none; border-radius: 12px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#B5B6BB;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>
+<span style="font-size: 16px; font-weight: 700">Ноябрь 2026</span>
+<button type="button" aria-label="Следующий месяц" style="width: 40px; height: 40px; border: none; border-radius: 12px; background: #2C2D33; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#FFFFFF;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+</div>
+<div aria-hidden="true" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; font-size: 12px; color: #8A8B90; padding-bottom: 2px">
+<span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+</div>
+<div role="grid" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="42"><button type="button" aria-label="{{d.label}}" aria-pressed="{{d.pressed}}" style="height: 38px; border: none; border-radius: 12px; background: {{d.bg}}; box-shadow: {{d.ring}}; color: {{d.fg}}; font-family: Onest, sans-serif; font-size: 15px; font-weight: {{d.w}}; cursor: pointer">{{d.n}}</button></sc-for>
+</div>
+<div aria-hidden="true" style="height: 1px; background: #2C2D33; margin: 6px 4px 0"></div>
+<button type="button" style="display: flex; align-items: center; gap: 10px; height: 44px; border: none; border-radius: 12px; background: transparent; padding: 0 10px; font-family: Onest, sans-serif; font-size: 15px; color: #B5B6BB; cursor: pointer; text-align: left"><svg width="16" height="16" viewBox="0 0 24 24" style="stroke:#B5B6BB;stroke-width:2;stroke-linecap:round;fill:none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>Убрать дату</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"selected":{"editor":"int","default":28},"$preview":{"width":320,"height":390}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sel = this.props.selected ?? 28;
+    const today = 23;
+    const days = [];
+    [26, 27, 28, 29, 30, 31].forEach((n) => days.push({ n, out: true }));
+    for (let n = 1; n <= 30; n++) days.push({ n, out: false });
+    for (let n = 1; days.length < 42; n++) days.push({ n, out: true });
+    return {
+      days: days.map((d) => {
+        const isToday = !d.out && d.n === today;
+        const isSel = !d.out && d.n === sel;
+        return {
+          n: d.n,
+          label: (d.out ? String(d.n) : d.n + ' ноября') + (isToday ? ', сегодня' : ''),
+          pressed: isSel ? 'true' : 'false',
+          bg: isToday ? '#C8F56A' : (isSel ? '#2C2D33' : 'transparent'),
+          ring: isSel ? 'inset 0 0 0 2px #FFFFFF' : 'none',
+          fg: isToday ? '#17181C' : (d.out ? '#5E6066' : '#FFFFFF'),
+          w: (isToday || isSel) ? 700 : 500
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

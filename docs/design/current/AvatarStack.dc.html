@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Аватары участников</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&amp;family=Unbounded:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<span role="group" aria-label="{{label}}" style="display: inline-flex; align-items: center; font-family: Onest, sans-serif">
+<sc-for list="{{items}}" as="a" hint-placeholder-count="2"><span style="margin-left: {{a.ml}}px; display: inline-flex"><dc-import name="Avatar" who="{{a.who}}" more="{{a.more}}" size="{{size}}" ring="2" ring-color="{{ring}}" hint-size="{{a.hs}}"></dc-import></span></sc-for>
+</span>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"who":{"editor":null},"size":{"editor":"int","default":24},"ring":{"editor":"color","default":"#FFFFFF"},"$preview":{"width":80,"height":30}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const who = this.props.who ?? ['vitaly', 'olesya'];
+    const size = this.props.size ?? 24;
+    const names = { vitaly: 'Виталий', olesya: 'Олеся', anya: 'Аня' };
+    const shown = who.slice(0, 3);
+    const items = shown.map((w, i) => ({ who: w, more: '', ml: i === 0 ? 0 : -Math.round(size * 0.3), hs: size + 'px,' + size + 'px' }));
+    if (who.length > 3) items.push({ who: 'more', more: '+' + (who.length - 3), ml: -Math.round(size * 0.3), hs: size + 'px,' + size + 'px' });
+    return { items, size, ring: this.props.ring ?? '#FFFFFF', label: 'Участники: ' + who.map((w) => names[w] ?? w).join(', ') };
+  }
+}
+</script>
+</body>
+</html>
